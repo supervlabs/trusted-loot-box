@@ -50,6 +50,5 @@ Our solution seeks to address these issues head-on by implementing an on-chain l
 * Probabilities On-Chain: For setting and updating item drop probabilities.
 * Item Looting: Mechanism for users to acquire items.
 * Item Table Management: For registering, looking up, and updating item tables.
-* Item Promotion/Evolution: Advanced module for item upgrades.
-* Verification and Recording: For looting verification and process recording.
+* Recording: For looting process recording.
 * Explorer Integration: To enable users to check the process and results.
