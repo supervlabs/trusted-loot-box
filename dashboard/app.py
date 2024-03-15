@@ -1,6 +1,5 @@
 import plotly.express as px
 import streamlit as st
-
 from data_handler import get_rewards_data
 
 st.set_page_config(
@@ -9,6 +8,8 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="auto",
 )
+
+st.title("Trusted Loot Box - Dashboard")
 
 df = get_rewards_data(1000)
 
@@ -21,11 +22,16 @@ names = ["Total Trials"] + [n.capitalize() for n in names]
 values = [n_trial] + df_count.tolist()
 
 n_metrics = n_reward_grades + 1
-st.markdown("**Metrics:**")
-for i, col in enumerate(st.columns([1] * n_metrics + [6])):
+st.markdown("**Metrics:** How many rewards have been distributed by grades?")
+for i, col in enumerate(st.columns([1] * n_metrics + [7])):
     if i == n_metrics:
+        # Skip the last column which is for the plot
         continue
-    col.metric(label=names[i], value=values[i])
+    elif i == n_metrics - 1:
+        # Add a rainbow star for the last metric which is the rarest
+        col.metric(label=f":rainbow[⭐️ {names[i]}]", value=values[i])
+    else:
+        col.metric(label=names[i], value=values[i])
 
 
 left, right = st.columns(2)
@@ -60,6 +66,10 @@ with right:
 with left:
     # Show Heatmap for Rewards vs. Trials
     df_heatmap = df.iloc[:, 1:].T
+    df_heatmap = df_heatmap.reindex(
+        index=df_heatmap.index[::-1]
+    )  # Reverse the order of rows
+
     fig = px.imshow(
         df_heatmap,
         x=df.index + 1,
