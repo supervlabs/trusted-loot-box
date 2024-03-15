@@ -1,0 +1,6 @@
+pandas-stubs==2.2.0.240218
+plotly==5.20.0
+pytest-watch==4.2.0
+pytest==8.1.1
+streamlit==1.32.1
+watchdog==4.0.0
