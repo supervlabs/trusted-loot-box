@@ -34,6 +34,4 @@ streamlit run app.py
 
 ## Distributed Dashboard
 
-The dashboard is also available online. You can access it [here](https://trusted-loot-box.herokuapp.com/).
-
-✅ TODO: Distribute the dashboard really and provide the link here.
+The dashboard is also available online. You can access it [here](https://trusted-loot-box.onrender.com/).
