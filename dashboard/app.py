@@ -1,5 +1,3 @@
-from time import sleep
-
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -13,6 +11,9 @@ st.set_page_config(
 )
 
 st.title("Trusted Loot Box - Dashboard")
+
+if st.button("Click! to Refresh Data"):
+    st.rerun()
 
 if "last_updated" not in st.session_state:
     st.session_state.last_updated = "2024-01-01T00:00:00Z"
@@ -92,3 +93,6 @@ with left:
         color_continuous_scale=["white", "blue"],
     ).update_layout(coloraxis_showscale=False)
     st.plotly_chart(fig)
+
+if st.button("Click to Refresh Data"):
+    st.rerun()

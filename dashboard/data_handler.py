@@ -3,7 +3,7 @@ import streamlit as st
 from fake_data import get_fake_rewards
 
 
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=10)
 def get_rewards_data(since: str, n: int = 10) -> pd.DataFrame:
     # TODO: Get real data from API
 
