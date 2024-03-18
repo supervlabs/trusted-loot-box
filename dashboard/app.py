@@ -1,3 +1,5 @@
+from time import sleep
+
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -18,11 +20,11 @@ if "last_updated" not in st.session_state:
 if "df" not in st.session_state:
     st.session_state.df = pd.DataFrame()
 
-new_df = get_rewards_data(1000)  # TODO: get data since last_updated
+new_df = get_rewards_data(since=st.session_state.last_updated, n=1000)
 df = pd.concat([st.session_state.df, new_df], ignore_index=True)
 
 st.session_state.df = df
-latest_datetime = df["datetime"].max()
+latest_datetime = df["datetime"].max().isoformat() + "Z"
 st.session_state.last_updated = latest_datetime
 
 # Show Metrics
