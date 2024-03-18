@@ -2,7 +2,7 @@ import random
 from datetime import datetime, timedelta
 
 
-def get_fake_rewards(n: int = 10, seed: int | None = None) -> list[tuple]:
+def get_fake_rewards(since: str, n: int = 10, seed: int | None = None) -> list[tuple]:
     random.seed(seed)
 
     reward_grades = ("Common", "Uncommon", "Rare", "Epic", "Legendary")
@@ -12,7 +12,7 @@ def get_fake_rewards(n: int = 10, seed: int | None = None) -> list[tuple]:
     rewards = random.choices(reward_grades, reward_probabilities, k=n)
 
     result = []
-    current_datetime = datetime.strptime("2024-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ")
+    current_datetime = datetime.strptime(since, "%Y-%m-%dT%H:%M:%SZ")
 
     for r in rewards:
         counter = [0, 0, 0, 0, 0]

@@ -2,7 +2,7 @@ from fake_data import get_fake_rewards
 
 
 def test_generate_fake_rewards():
-    fake_rewards = get_fake_rewards(n=10, seed=314)
+    fake_rewards = get_fake_rewards(since="2024-01-01T00:00:00Z", n=10, seed=314)
     assert fake_rewards == [
         ("2024-01-01T00:00:06Z", 1, 0, 0, 0, 0),
         ("2024-01-01T00:00:58Z", 1, 0, 0, 0, 0),

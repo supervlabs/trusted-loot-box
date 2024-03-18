@@ -1,3 +1,4 @@
+import pandas as pd
 import plotly.express as px
 import streamlit as st
 from data_handler import get_rewards_data
@@ -11,7 +12,21 @@ st.set_page_config(
 
 st.title("Trusted Loot Box - Dashboard")
 
-df = get_rewards_data(1000)
+if st.button("Click! to Refresh Data"):
+    st.rerun()
+
+if "last_updated" not in st.session_state:
+    st.session_state.last_updated = "2024-01-01T00:00:00Z"
+
+if "df" not in st.session_state:
+    st.session_state.df = pd.DataFrame()
+
+new_df = get_rewards_data(since=st.session_state.last_updated, n=1000)
+df = pd.concat([st.session_state.df, new_df], ignore_index=True)
+
+st.session_state.df = df
+latest_datetime = df["datetime"].max().isoformat() + "Z"
+st.session_state.last_updated = latest_datetime
 
 # Show Metrics
 df_count = df.iloc[:, 1:].sum()
@@ -78,3 +93,6 @@ with left:
         color_continuous_scale=["white", "blue"],
     ).update_layout(coloraxis_showscale=False)
     st.plotly_chart(fig)
+
+if st.button("Click to Refresh Data"):
+    st.rerun()

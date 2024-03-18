@@ -2,7 +2,7 @@ from data_handler import get_rewards_data
 
 
 def test_get_rewards_data():
-    df = get_rewards_data(100)
+    df = get_rewards_data("2024-01-01T00:00:00Z", 100)
     assert df.shape == (100, 6)
     assert df.columns.tolist() == [
         "datetime",
