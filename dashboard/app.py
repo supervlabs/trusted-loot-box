@@ -8,6 +8,11 @@ st.set_page_config(
     page_icon="🎲",
     layout="wide",
     initial_sidebar_state="auto",
+    menu_items={
+        "Get Help": "mailto:cs@supervlabs.io",
+        "Report a bug": "mailto:cs@supervlabs.io",
+        "About": "This is a dashboard for Trusted Loot Box by [Supervillain Labs](https://supervlabs.io/)",
+    },
 )
 
 
