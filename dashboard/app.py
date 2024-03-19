@@ -10,6 +10,29 @@ st.set_page_config(
     initial_sidebar_state="auto",
 )
 
+
+def show_rewards_probabilities(col):
+    # TODO: Get real rewards table
+    reward_grades = ("Common", "Uncommon", "Rare", "Epic", "Legendary")
+    reward_probabilities = (0.6, 0.25, 0.1, 0.04, 0.01)
+    rewards_table = pd.DataFrame(
+        {"Rewards": reward_grades, "Probabilities": reward_probabilities}
+    )
+    rewards_table.set_index("Rewards", inplace=True)
+
+    with col:
+        st.markdown("**Reward Probabilities:**")
+        st.data_editor(
+            rewards_table,
+            column_config={
+                "Rewards": st.column_config.TextColumn(disabled=True),
+                "Probabilities": st.column_config.NumberColumn(
+                    format="%.2f", disabled=True
+                ),
+            },
+        )
+
+
 st.title("Trusted Loot Box - Dashboard")
 
 if st.button("Click! to Refresh Data"):
@@ -28,26 +51,29 @@ st.session_state.df = df
 latest_datetime = df["datetime"].max().isoformat() + "Z"
 st.session_state.last_updated = latest_datetime
 
-# Show Metrics
-df_count = df.iloc[:, 1:].sum()
-n_trial = df_count.sum()
-n_reward_grades = len(df_count)
-names = df_count.index.tolist()
-names = ["Total Trials"] + [n.capitalize() for n in names]
-values = [n_trial] + df_count.tolist()
 
-n_metrics = n_reward_grades + 1
-st.markdown("**Metrics:** How many rewards have been distributed by grades?")
-for i, col in enumerate(st.columns([1] * n_metrics + [7])):
-    if i == n_metrics:
-        # Skip the last column which is for the plot
-        continue
-    elif i == n_metrics - 1:
-        # Add a rainbow star for the last metric which is the rarest
-        col.metric(label=f":rainbow[⭐️ {names[i]}]", value=values[i])
-    else:
-        col.metric(label=names[i], value=values[i])
+with st.container():
+    left, right = st.columns(2)
+    with left:
+        # Show Metrics
+        df_count = df.iloc[:, 1:].sum()
+        n_trial = df_count.sum()
+        n_reward_grades = len(df_count)
+        names = df_count.index.tolist()
+        names = ["Total Trials"] + [n.capitalize() for n in names]
+        values = [n_trial] + df_count.tolist()
 
+        n_metrics = n_reward_grades + 1
+        st.markdown("**Metrics:** How many rewards have been distributed by grades?")
+        for i, col in enumerate(st.columns([1] * n_metrics)):
+            if i == n_metrics - 1:
+                # Add a rainbow star for the last metric which is the rarest
+                col.metric(label=f":rainbow[⭐️ {names[i]}]", value=values[i])
+            else:
+                col.metric(label=names[i], value=values[i])
+
+    with right:
+        show_rewards_probabilities(right)
 
 left, right = st.columns(2)
 
@@ -59,6 +85,7 @@ with left:
         title="Rewards Distribution",
     )
     st.plotly_chart(fig)
+
 
 with right:
     # Show Time Series for All Rewards
