@@ -42,7 +42,7 @@ def show_rewards_probabilities(col):
 
 st.title("Trusted Loot Box - Dashboard")
 
-if st.button("Click! to Refresh Data"):
+if st.button("Click to Refresh Data"):
     st.rerun()
 
 if "last_updated" not in st.session_state:
@@ -128,5 +128,15 @@ with left:
     ).update_layout(coloraxis_showscale=False)
     st.plotly_chart(fig)
 
-if st.button("Click to Refresh Data"):
-    st.rerun()
+
+# Show the trial table
+df_for_table = df.copy()
+df_for_table.index = df_for_table.index + 1
+df_for_table.index.name = "# Trials"
+
+st.markdown("**Trials Table:** The list of Rewards for each trial")
+st.data_editor(
+    df_for_table[::-1],
+    column_config={"datetime": st.column_config.Column("DateTime")},
+    disabled=True,
+)
