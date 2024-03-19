@@ -26,7 +26,9 @@ def show_rewards_probabilities(col):
     rewards_table.set_index("Rewards", inplace=True)
 
     with col:
-        st.markdown("**Reward Probabilities:**")
+        st.markdown(
+            "**Reward Probabilities:** What are the chances of getting each reward?"
+        )
         st.data_editor(
             rewards_table,
             column_config={
