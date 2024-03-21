@@ -1,5 +1,10 @@
 import pandas as pd
-from data_handler import convert_json_to_df, get_rewards_data, one_hot_encode
+from data_handler import (
+    convert_json_to_df,
+    get_dataframe,
+    get_rewards_data,
+    one_hot_encode,
+)
 
 
 def test_get_rewards_data():
@@ -168,3 +173,36 @@ def test_one_hot_encode_with_missing_grades():
     assert df_encoded["Rare"].tolist() == [0, 0, 0, 1, 1, 0, 0, 0, 1, 0]
     assert df_encoded["Epic"].tolist() == [0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert df_encoded["Legendary"].tolist() == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+
+def test_get_dataframe():
+    df = get_dataframe(TEST_JSON_DICT)
+
+    assert df.shape == (3, 10)
+    assert df.columns.tolist() == [
+        "created_at",
+        "grade",
+        "item_name",
+        "total_minted",
+        "token_data_id",
+        "Common",
+        "Uncommon",
+        "Rare",
+        "Epic",
+        "Legendary",
+    ]
+    assert df["created_at"].dtype == "datetime64[ns]"
+    assert df["created_at"].is_monotonic_increasing
+    assert df["grade"].tolist() == ["Uncommon", "Common", "Uncommon"]
+    assert df["item_name"].tolist() == ["Bruh", "Poki", "Gentlepeng"]
+    assert df["total_minted"].tolist() == ["13", "14", "15"]
+    assert df["token_data_id"].tolist() == [
+        "0x1571a2ef6228d78873a44a18f1d5f720735fb882963abbb69467a1052b5cea5a",
+        "0xae5ef61e4a7e1b411d26e517a6f2e2a388a57d862252b2b0bb24d3ac4718cb56",
+        "0xc8313afe9febd1c7ae529a463bf31a842a3fec40a522a9843e9aea5bdef00d49",
+    ]
+    assert df["Common"].tolist() == [0, 1, 0]
+    assert df["Uncommon"].tolist() == [1, 0, 1]
+    assert df["Rare"].tolist() == [0, 0, 0]
+    assert df["Epic"].tolist() == [0, 0, 0]
+    assert df["Legendary"].tolist() == [0, 0, 0]

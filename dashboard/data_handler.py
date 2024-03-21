@@ -44,3 +44,10 @@ def one_hot_encode(grades_series: pd.Series) -> pd.DataFrame:
     one_hot = pd.get_dummies(df, dtype=int)
     one_hot = one_hot[list(GRADES)][: -len(placeholder)]  # Drop the placeholder
     return one_hot
+
+
+def get_dataframe(json_dicts: list[dict]) -> pd.DataFrame:
+    df = convert_json_to_df(json_dicts)
+    df_encoded = one_hot_encode(df["grade"])
+    df = pd.concat([df, df_encoded], axis=1)
+    return df
