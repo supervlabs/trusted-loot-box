@@ -1,4 +1,5 @@
-from data_handler import convert_json_to_df, get_rewards_data
+import pandas as pd
+from data_handler import convert_json_to_df, get_rewards_data, one_hot_encode
 
 
 def test_get_rewards_data():
@@ -99,3 +100,35 @@ def test_json_to_df():
         "0xae5ef61e4a7e1b411d26e517a6f2e2a388a57d862252b2b0bb24d3ac4718cb56",
         "0xc8313afe9febd1c7ae529a463bf31a842a3fec40a522a9843e9aea5bdef00d49",
     ]
+
+
+def test_one_hot_encode():
+    df = pd.DataFrame(
+        {
+            "grade": [
+                "common",
+                "epic",
+                "uncommon",
+                "rare",
+                "rare",
+                "epic",
+                "legendary",
+            ],
+        }
+    )
+
+    df_encoded = one_hot_encode(df["grade"])
+
+    assert df_encoded.shape == (7, 5)
+    assert df_encoded.columns.tolist() == [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary",
+    ]
+    assert df_encoded["common"].tolist() == [1, 0, 0, 0, 0, 0, 0]
+    assert df_encoded["uncommon"].tolist() == [0, 0, 1, 0, 0, 0, 0]
+    assert df_encoded["rare"].tolist() == [0, 0, 0, 1, 1, 0, 0]
+    assert df_encoded["epic"].tolist() == [0, 1, 0, 0, 0, 1, 0]
+    assert df_encoded["legendary"].tolist() == [0, 0, 0, 0, 0, 0, 1]

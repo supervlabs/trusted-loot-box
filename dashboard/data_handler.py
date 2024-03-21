@@ -2,6 +2,11 @@ import pandas as pd
 import streamlit as st
 from fake_data import get_fake_rewards
 
+GRADES = ("common", "uncommon", "rare", "epic", "legendary")
+PROBABILITIES = (1 - (0.3 + 0.05 + 0.008 + 0.0001), 0.3, 0.05, 0.008, 0.0001)
+assert len(GRADES) == len(PROBABILITIES)
+assert sum(PROBABILITIES) == 1
+
 
 @st.cache_data(ttl=10)
 def get_rewards_data(since: str, n: int = 10, seed: int | None = None) -> pd.DataFrame:
@@ -31,3 +36,9 @@ def convert_json_to_df(json_dicts: list[dict]) -> pd.DataFrame:
     df = pd.DataFrame(selected_json_dicts)
     df["created_at"] = pd.to_datetime(df["created_at"], format="%Y-%m-%dT%H:%M:%S.%fZ")
     return df
+
+
+def one_hot_encode(grades_series: pd.Series) -> pd.DataFrame:
+    one_hot = pd.get_dummies(grades_series, dtype=int)
+    one_hot = one_hot[list(GRADES)]
+    return one_hot
