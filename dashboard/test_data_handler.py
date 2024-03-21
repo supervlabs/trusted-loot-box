@@ -9,12 +9,13 @@ from data_handler import (
     get_dataframe,
     get_json_from_api,
     get_rewards_data,
+    get_rewards_data_for_test,
     one_hot_encode,
 )
 
 
 def test_get_rewards_data():
-    df = get_rewards_data("2024-01-01T00:00:00Z", 100, seed=314)
+    df = get_rewards_data_for_test("2024-01-01T00:00:00Z", 100, seed=314)
     assert df.shape == (100, 6)
     assert df.columns.tolist() == [
         "datetime",
@@ -235,3 +236,22 @@ def test_get_json_from_api():
 
     with pytest.raises(requests.exceptions.HTTPError):
         get_json_from_api("https://randomhack.supervlabs.net/backend/web3/gacha")
+
+
+def test_get_rewards_data_live():
+    df = get_rewards_data()
+    assert df.shape[0] > 0
+    assert df.shape[1] == 9
+    assert df["created_at"].dtype == "datetime64[ns]"
+    assert df["created_at"].is_monotonic_increasing
+    assert df.columns.tolist() == [
+        "created_at",
+        "grade",
+        "item_name",
+        "txn_hash",
+        "Common",
+        "Uncommon",
+        "Rare",
+        "Epic",
+        "Legendary",
+    ]

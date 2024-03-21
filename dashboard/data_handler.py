@@ -14,9 +14,9 @@ assert sum(PROBABILITIES) == 1
 
 
 @st.cache_data(ttl=10)
-def get_rewards_data(since: str, n: int = 10, seed: int | None = None) -> pd.DataFrame:
-    # TODO: Get real data from API
-
+def get_rewards_data_for_test(
+    since: str, n: int = 10, seed: int | None = None
+) -> pd.DataFrame:
     rewards_data = get_fake_rewards(since=since, n=n, seed=seed)
     df = pd.DataFrame(
         rewards_data,
@@ -25,6 +25,12 @@ def get_rewards_data(since: str, n: int = 10, seed: int | None = None) -> pd.Dat
     df["datetime"] = pd.to_datetime(df["datetime"], format="%Y-%m-%dT%H:%M:%SZ")
 
     return df
+
+
+@st.cache_data(ttl=10, show_spinner=False)
+def get_rewards_data(since: str | None = None) -> pd.DataFrame:
+    json_data = get_json_from_api(since_date=since)
+    return get_dataframe(json_data) if json_data else pd.DataFrame()
 
 
 def convert_json_to_df(json_dicts: list[dict]) -> pd.DataFrame:
@@ -38,7 +44,10 @@ def convert_json_to_df(json_dicts: list[dict]) -> pd.DataFrame:
         {k: v for k, v in d.items() if k in selected_columns} for d in json_dicts
     ]
     df = pd.DataFrame(selected_json_dicts)
-    df["created_at"] = pd.to_datetime(df["created_at"], format="%Y-%m-%dT%H:%M:%S.%fZ")
+    if not df.empty:
+        df["created_at"] = pd.to_datetime(
+            df["created_at"], format="%Y-%m-%dT%H:%M:%S.%fZ"
+        )
     return df
 
 
