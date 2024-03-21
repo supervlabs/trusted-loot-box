@@ -6,7 +6,7 @@ def get_fake_rewards(since: str, n: int = 10, seed: int | None = None) -> list[t
     random.seed(seed)
 
     reward_grades = ("Common", "Uncommon", "Rare", "Epic", "Legendary")
-    reward_probabilities = (0.6, 0.25, 0.1, 0.04, 0.01)
+    reward_probabilities = (1 - (0.3 + 0.05 + 0.008 + 0.0001), 0.3, 0.05, 0.008, 0.0001)
     assert sum(reward_probabilities) == 1.0
 
     rewards = random.choices(reward_grades, reward_probabilities, k=n)
