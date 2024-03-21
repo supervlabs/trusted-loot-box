@@ -149,7 +149,7 @@ st.data_editor(
     df_for_table[::-1],
     column_config={
         "created_at": st.column_config.DatetimeColumn(
-            "DateTime", format="YYYY-MM-DD HH:mm:ss.SSS"
+            "DateTime (UTC)", format="YYYY-MM-DD HH:mm:ss.SSS"
         ),
         "grade": st.column_config.TextColumn("Grade"),
         "item_name": st.column_config.TextColumn("Item Name"),
