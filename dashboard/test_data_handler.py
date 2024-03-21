@@ -1,10 +1,13 @@
 import os
 
 import pandas as pd
+import pytest
+import requests
 from data_handler import (
     convert_json_to_df,
     get_api_url,
     get_dataframe,
+    get_json_from_api,
     get_rewards_data,
     one_hot_encode,
 )
@@ -220,3 +223,15 @@ def test_get_api_url():
         actual
         == "https://randomhack.supervlabs.net/backend/web3/gacha/sidekick?since=2024-01-01T00%3A00%3A00Z"
     )
+
+
+def test_get_json_from_api():
+    actual = get_json_from_api()
+    assert actual is not None
+    assert len(actual) > 0
+    assert isinstance(actual, list)
+    assert isinstance(actual[0], dict)
+    assert "created_at" in actual[0]
+
+    with pytest.raises(requests.exceptions.HTTPError):
+        get_json_from_api("https://randomhack.supervlabs.net/backend/web3/gacha")

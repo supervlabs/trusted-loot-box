@@ -2,6 +2,7 @@ import os
 from urllib.parse import urlencode, urlunparse
 
 import pandas as pd
+import requests
 import streamlit as st
 from dotenv import dotenv_values
 from fake_data import get_fake_rewards
@@ -70,3 +71,12 @@ def get_api_url(api_url: str | None = None, since_date: str | None = None) -> st
     query_params = {"since": since_date}
     query_string = urlencode(query_params)
     return urlunparse(("", "", api_url, "", query_string, ""))
+
+
+def get_json_from_api(
+    api_url: str | None = None, since_date: str | None = None
+) -> list[dict]:
+    call_url = get_api_url(api_url, since_date)
+    response = requests.get(call_url)
+    response.raise_for_status()
+    return response.json()
