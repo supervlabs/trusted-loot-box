@@ -1,6 +1,9 @@
+import os
+
 import pandas as pd
 from data_handler import (
     convert_json_to_df,
+    get_api_url,
     get_dataframe,
     get_rewards_data,
     one_hot_encode,
@@ -206,3 +209,20 @@ def test_get_dataframe():
     assert df["Rare"].tolist() == [0, 0, 0]
     assert df["Epic"].tolist() == [0, 0, 0]
     assert df["Legendary"].tolist() == [0, 0, 0]
+
+
+def test_get_api_url():
+    os.environ["API_URL"] = "http://test.com/backend/web3/gacha/sidekick"
+    actual = get_api_url()
+    assert (
+        actual
+        == "http://test.com/backend/web3/gacha/sidekick?since=2024-01-01T00%3A00%3A00Z"
+    )
+    os.environ.pop("API_URL")
+
+    assert os.environ.get("API_URL") is None
+    actual = get_api_url()
+    assert (
+        actual
+        == "https://randomhack.supervlabs.net/backend/web3/gacha/sidekick?since=2024-01-01T00%3A00%3A00Z"
+    )

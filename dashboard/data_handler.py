@@ -1,5 +1,9 @@
+import os
+from urllib.parse import urlencode, urlunparse
+
 import pandas as pd
 import streamlit as st
+from dotenv import dotenv_values
 from fake_data import get_fake_rewards
 
 GRADES = ("Common", "Uncommon", "Rare", "Epic", "Legendary")
@@ -51,3 +55,19 @@ def get_dataframe(json_dicts: list[dict]) -> pd.DataFrame:
     df_encoded = one_hot_encode(df["grade"])
     df = pd.concat([df, df_encoded], axis=1)
     return df
+
+
+def get_api_url(api_url: str | None = None, since_date: str | None = None) -> str:
+    if since_date is None:
+        since_date = "2024-01-01T00:00:00Z"
+
+    if api_url is None:
+        if (api_url := os.getenv("API_URL")) is None:
+            api_url = dotenv_values(".env").get("API_URL")
+
+    if api_url is None:
+        raise ValueError("API_URL is not set in .env file or in environment variable.")
+
+    query_params = {"since": since_date}
+    query_string = urlencode(query_params)
+    return urlunparse(("", "", api_url, "", query_string, ""))
