@@ -1,7 +1,7 @@
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-from data_handler import get_rewards_data
+from data_handler import GRADES, PROBABILITIES, get_rewards_data
 
 st.set_page_config(
     page_title="Trusted Loot Box",
@@ -18,8 +18,8 @@ st.set_page_config(
 
 def show_rewards_probabilities(col):
     # TODO: Get real rewards table
-    reward_grades = ("Common", "Uncommon", "Rare", "Epic", "Legendary")
-    reward_probabilities = (0.6, 0.25, 0.1, 0.04, 0.01)
+    reward_grades = GRADES
+    reward_probabilities = PROBABILITIES
     rewards_table = pd.DataFrame(
         {"Rewards": reward_grades, "Probabilities": reward_probabilities}
     )
@@ -34,7 +34,7 @@ def show_rewards_probabilities(col):
             column_config={
                 "Rewards": st.column_config.TextColumn(disabled=True),
                 "Probabilities": st.column_config.NumberColumn(
-                    format="%.2f", disabled=True
+                    format="%.4f", disabled=True
                 ),
             },
         )

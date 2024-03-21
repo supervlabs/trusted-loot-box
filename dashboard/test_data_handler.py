@@ -15,10 +15,10 @@ def test_get_rewards_data():
     ]
     assert df["datetime"].dtype == "datetime64[ns]"
     assert df["Legendary"].sum() == 0
-    assert df["Epic"].sum() == 4
-    assert df["Rare"].sum() == 3
-    assert df["Uncommon"].sum() == 17
-    assert df["Common"].sum() == 76
+    assert df["Epic"].sum() == 0
+    assert df["Rare"].sum() == 4
+    assert df["Uncommon"].sum() == 14
+    assert df["Common"].sum() == 82
     assert df["datetime"].is_monotonic_increasing
 
 
