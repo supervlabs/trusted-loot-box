@@ -17,7 +17,7 @@ st.set_page_config(
 
 
 def show_rewards_probabilities(col):
-    # TODO: Get real rewards table
+    # TODO: Get real rewards table from api
     reward_grades = GRADES
     reward_probabilities = PROBABILITIES
     rewards_table = pd.DataFrame(
@@ -51,11 +51,11 @@ if "last_updated" not in st.session_state:
 if "df" not in st.session_state:
     st.session_state.df = pd.DataFrame()
 
-new_df = get_rewards_data(since=st.session_state.last_updated, n=1000)
+new_df = get_rewards_data(since=st.session_state.last_updated)
 df = pd.concat([st.session_state.df, new_df], ignore_index=True)
 
 st.session_state.df = df
-latest_datetime = df["datetime"].max().isoformat() + "Z"
+latest_datetime = df["created_at"].max().isoformat() + "Z"
 st.session_state.last_updated = latest_datetime
 
 
@@ -63,7 +63,7 @@ with st.container():
     left, right = st.columns(2)
     with left:
         # Show Metrics
-        df_count = df.iloc[:, 1:].sum()
+        df_count = df.iloc[:, 4:].sum()
         n_trial = df_count.sum()
         n_reward_grades = len(df_count)
         names = df_count.index.tolist()
@@ -97,7 +97,7 @@ with left:
 with right:
     # Show Time Series for All Rewards
     fig = px.line(
-        df.set_index("datetime").cumsum(), title="Rewards Time Series"
+        df.set_index("created_at").iloc[:, 3:].cumsum(), title="Rewards Time Series"
     ).update_layout(
         xaxis_title="Date",
         yaxis_title="Cumulative Count",
@@ -108,13 +108,15 @@ with right:
 with right:
     # Show Time Series for the Rarest Reward and confidence interval
     fig = px.line(
-        df.set_index("datetime").cumsum(), y="Legendary", title="Legendary Time Series"
+        df.set_index("created_at").iloc[:, 3:].cumsum(),
+        y="Legendary",
+        title="Legendary Time Series",
     ).update_layout(xaxis_title="Date", yaxis_title="Cumulative Count")
     st.plotly_chart(fig)
 
 with left:
     # Show Heatmap for Rewards vs. Trials
-    df_heatmap = df.iloc[:, 1:].T
+    df_heatmap = df.iloc[:, 4:].T
     df_heatmap = df_heatmap.reindex(
         index=df_heatmap.index[::-1]
     )  # Reverse the order of rows
@@ -130,13 +132,31 @@ with left:
 
 
 # Show the trial table
-df_for_table = df.copy()
+df_for_table = df.copy().iloc[:, :4]
 df_for_table.index = df_for_table.index + 1
 df_for_table.index.name = "# Trials"
+
+
+def make_link(txn_hash):
+    url = f"https://explorer.aptoslabs.com/txn/{txn_hash}/userTxnOverview?network=randomnet"
+    return url
+
+
+df_for_table["link"] = df_for_table["txn_hash"].apply(make_link)
 
 st.markdown("**Trials Table:** The list of Rewards for each trial")
 st.data_editor(
     df_for_table[::-1],
-    column_config={"datetime": st.column_config.Column("DateTime")},
+    column_config={
+        "created_at": st.column_config.DatetimeColumn(
+            "DateTime", format="YYYY-MM-DD HH:mm:ss.SSS"
+        ),
+        "grade": st.column_config.TextColumn("Grade"),
+        "item_name": st.column_config.TextColumn("Item Name"),
+        "txn_hash": st.column_config.TextColumn("Txn Hash"),
+        "link": st.column_config.LinkColumn(
+            "Aptos Explorer Link", display_text="Link to Aptos Explorer"
+        ),
+    },
     disabled=True,
 )
