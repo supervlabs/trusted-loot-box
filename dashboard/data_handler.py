@@ -39,6 +39,8 @@ def convert_json_to_df(json_dicts: list[dict]) -> pd.DataFrame:
 
 
 def one_hot_encode(grades_series: pd.Series) -> pd.DataFrame:
-    one_hot = pd.get_dummies(grades_series, dtype=int)
-    one_hot = one_hot[list(GRADES)]
+    placeholder = pd.Series(list(GRADES))
+    df = pd.concat([grades_series, placeholder])
+    one_hot = pd.get_dummies(df, dtype=int)
+    one_hot = one_hot[list(GRADES)][: -len(placeholder)]  # Drop the placeholder
     return one_hot
