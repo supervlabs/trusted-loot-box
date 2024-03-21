@@ -1,7 +1,13 @@
+import os
+
 import pandas as pd
+import pytest
+import requests
 from data_handler import (
     convert_json_to_df,
+    get_api_url,
     get_dataframe,
+    get_json_from_api,
     get_rewards_data,
     one_hot_encode,
 )
@@ -29,58 +35,64 @@ def test_get_rewards_data():
 
 TEST_JSON_DICT = [
     {
-        "created_at": "2024-03-19T06:20:20.673Z",
+        "created_at": "2024-03-21T05:42:22.303Z",
         "grade": "Uncommon",
-        "gkey": "sidekick-2024-03-19",
+        "gkey": "sidekick-2024-03-21",
         "selected_round": "0",
         "group": "sidekick",
-        "skey": "2024-03-19T06:20:19.840Z-13",
-        "updated_at": "2024-03-19T06:20:20.673Z",
-        "item_name": "Bruh",
-        "item_group": "sidekick/uncommon",
-        "total_minted": "13",
-        "current_round": "0",
-        "token_data_id": "0x1571a2ef6228d78873a44a18f1d5f720735fb882963abbb69467a1052b5cea5a",
-        "item_index": "13",
-        "token_name": "Bruh #1",
-        "item_minted": "1",
-        "txn_hash": "0xc2c36385bbdd3c4a16333048b99221ed9d5fbe47498bf0ec60412fc73fc62b8c",
-    },
-    {
-        "created_at": "2024-03-19T06:48:39.226Z",
-        "grade": "Common",
-        "gkey": "sidekick-2024-03-19",
-        "selected_round": "0",
-        "group": "sidekick",
-        "skey": "2024-03-19T06:48:38.841Z-14",
-        "updated_at": "2024-03-19T06:48:39.226Z",
-        "item_name": "Poki",
-        "item_group": "sidekick/common",
-        "total_minted": "14",
-        "current_round": "0",
-        "token_data_id": "0xae5ef61e4a7e1b411d26e517a6f2e2a388a57d862252b2b0bb24d3ac4718cb56",
-        "item_index": "6",
-        "token_name": "Poki #2",
-        "item_minted": "2",
-        "txn_hash": "0x096fe25e070c34349ca7a10bb2f756efb9adc3590df2050c255011f2137bb771",
-    },
-    {
-        "created_at": "2024-03-19T07:25:09.284Z",
-        "grade": "Uncommon",
-        "gkey": "sidekick-2024-03-19",
-        "selected_round": "0",
-        "group": "sidekick",
-        "skey": "2024-03-19T07:25:07.014Z-15",
-        "updated_at": "2024-03-19T07:25:09.284Z",
+        "skey": "2024-03-21T05:42:21.540Z-undefined",
+        "updated_at": "2024-03-21T05:42:22.303Z",
         "item_name": "Gentlepeng",
         "item_group": "sidekick/uncommon",
-        "total_minted": "15",
         "current_round": "0",
-        "token_data_id": "0xc8313afe9febd1c7ae529a463bf31a842a3fec40a522a9843e9aea5bdef00d49",
         "item_index": "12",
-        "token_name": "Gentlepeng #1",
         "item_minted": "1",
-        "txn_hash": "0x6f4eb236a709193594b434940589af43940cbb2f353f4397a2586a15e7dff85e",
+        "txn_hash": "0x1dd9e37675efe20ff2d65b6faddfde3ab8b94646947346ba3ad7cd77d619bc24",
+    },
+    {
+        "created_at": "2024-03-21T05:50:11.144Z",
+        "grade": "Common",
+        "gkey": "sidekick-2024-03-21",
+        "selected_round": "0",
+        "group": "sidekick",
+        "skey": "2024-03-21T05:50:10.598Z-undefined",
+        "updated_at": "2024-03-21T05:50:11.144Z",
+        "item_name": "Monkin",
+        "item_group": "sidekick/common",
+        "current_round": "0",
+        "item_index": "11",
+        "item_minted": "2",
+        "txn_hash": "0x29cdb96ba926f6aa70c288a81b546fe8c0ae1038e317a443103ff29c6fa4946f",
+    },
+    {
+        "created_at": "2024-03-21T06:05:49.164Z",
+        "grade": "Common",
+        "gkey": "sidekick-2024-03-21",
+        "selected_round": "0",
+        "group": "sidekick",
+        "skey": "2024-03-21T06:05:48.584Z-undefined",
+        "updated_at": "2024-03-21T06:05:49.164Z",
+        "item_name": "Rubicle",
+        "item_group": "sidekick/common",
+        "current_round": "0",
+        "item_index": "8",
+        "item_minted": "1",
+        "txn_hash": "0x71908206190323f43fbd3f3c8f90711ef07c488cd6de9ab0446238cd05b59b76",
+    },
+    {
+        "created_at": "2024-03-21T06:20:08.072Z",
+        "grade": "Common",
+        "gkey": "sidekick-2024-03-21",
+        "selected_round": "0",
+        "group": "sidekick",
+        "skey": "2024-03-21T06:20:07.646Z-undefined",
+        "updated_at": "2024-03-21T06:20:08.072Z",
+        "item_name": "Monkin",
+        "item_group": "sidekick/common",
+        "current_round": "0",
+        "item_index": "11",
+        "item_minted": "4",
+        "txn_hash": "0x50d4bb94ea4a40ca7cff97c91f3bf06f6100558429d456be6b2f58311327e0f6",
     },
 ]
 
@@ -90,21 +102,20 @@ def test_json_to_df():
 
     assert df["created_at"].dtype == "datetime64[ns]"
     assert df["created_at"].is_monotonic_increasing
-    assert df.shape == (3, 5)
+    assert df.shape == (4, 4)
     assert df.columns.tolist() == [
         "created_at",
         "grade",
         "item_name",
-        "total_minted",
-        "token_data_id",
+        "txn_hash",
     ]
-    assert df["grade"].tolist() == ["Uncommon", "Common", "Uncommon"]
-    assert df["item_name"].tolist() == ["Bruh", "Poki", "Gentlepeng"]
-    assert df["total_minted"].tolist() == ["13", "14", "15"]
-    assert df["token_data_id"].tolist() == [
-        "0x1571a2ef6228d78873a44a18f1d5f720735fb882963abbb69467a1052b5cea5a",
-        "0xae5ef61e4a7e1b411d26e517a6f2e2a388a57d862252b2b0bb24d3ac4718cb56",
-        "0xc8313afe9febd1c7ae529a463bf31a842a3fec40a522a9843e9aea5bdef00d49",
+    assert df["grade"].tolist() == ["Uncommon", "Common", "Common", "Common"]
+    assert df["item_name"].tolist() == ["Gentlepeng", "Monkin", "Rubicle", "Monkin"]
+    assert df["txn_hash"].tolist() == [
+        "0x1dd9e37675efe20ff2d65b6faddfde3ab8b94646947346ba3ad7cd77d619bc24",
+        "0x29cdb96ba926f6aa70c288a81b546fe8c0ae1038e317a443103ff29c6fa4946f",
+        "0x71908206190323f43fbd3f3c8f90711ef07c488cd6de9ab0446238cd05b59b76",
+        "0x50d4bb94ea4a40ca7cff97c91f3bf06f6100558429d456be6b2f58311327e0f6",
     ]
 
 
@@ -178,31 +189,49 @@ def test_one_hot_encode_with_missing_grades():
 def test_get_dataframe():
     df = get_dataframe(TEST_JSON_DICT)
 
-    assert df.shape == (3, 10)
+    assert df.shape == (4, 9)
     assert df.columns.tolist() == [
         "created_at",
         "grade",
         "item_name",
-        "total_minted",
-        "token_data_id",
+        "txn_hash",
         "Common",
         "Uncommon",
         "Rare",
         "Epic",
         "Legendary",
     ]
-    assert df["created_at"].dtype == "datetime64[ns]"
-    assert df["created_at"].is_monotonic_increasing
-    assert df["grade"].tolist() == ["Uncommon", "Common", "Uncommon"]
-    assert df["item_name"].tolist() == ["Bruh", "Poki", "Gentlepeng"]
-    assert df["total_minted"].tolist() == ["13", "14", "15"]
-    assert df["token_data_id"].tolist() == [
-        "0x1571a2ef6228d78873a44a18f1d5f720735fb882963abbb69467a1052b5cea5a",
-        "0xae5ef61e4a7e1b411d26e517a6f2e2a388a57d862252b2b0bb24d3ac4718cb56",
-        "0xc8313afe9febd1c7ae529a463bf31a842a3fec40a522a9843e9aea5bdef00d49",
-    ]
-    assert df["Common"].tolist() == [0, 1, 0]
-    assert df["Uncommon"].tolist() == [1, 0, 1]
-    assert df["Rare"].tolist() == [0, 0, 0]
-    assert df["Epic"].tolist() == [0, 0, 0]
-    assert df["Legendary"].tolist() == [0, 0, 0]
+    assert df["Common"].tolist() == [0, 1, 1, 1]
+    assert df["Uncommon"].tolist() == [1, 0, 0, 0]
+    assert df["Rare"].tolist() == [0, 0, 0, 0]
+    assert df["Epic"].tolist() == [0, 0, 0, 0]
+    assert df["Legendary"].tolist() == [0, 0, 0, 0]
+
+
+def test_get_api_url():
+    os.environ["API_URL"] = "http://test.com/backend/web3/gacha/sidekick"
+    actual = get_api_url()
+    assert (
+        actual
+        == "http://test.com/backend/web3/gacha/sidekick?since=2024-01-01T00%3A00%3A00Z"
+    )
+    os.environ.pop("API_URL")
+
+    assert os.environ.get("API_URL") is None
+    actual = get_api_url()
+    assert (
+        actual
+        == "https://randomhack.supervlabs.net/backend/web3/gacha/sidekick?since=2024-01-01T00%3A00%3A00Z"
+    )
+
+
+def test_get_json_from_api():
+    actual = get_json_from_api()
+    assert actual is not None
+    assert len(actual) > 0
+    assert isinstance(actual, list)
+    assert isinstance(actual[0], dict)
+    assert "created_at" in actual[0]
+
+    with pytest.raises(requests.exceptions.HTTPError):
+        get_json_from_api("https://randomhack.supervlabs.net/backend/web3/gacha")

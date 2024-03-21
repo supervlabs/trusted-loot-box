@@ -25,12 +25,16 @@ cd dashboard  # Change to the directory `dashboard`
 pip install -r requirements.txt
 ```
 
+`API_URL` is the URL of the API server. You can set it as an environment variable or save it in a `.env` file in the root directory of the dashboard.
+
+
 Run the dashboard using the following command:
 
 ```bash
 # Run the dashboard in the directory `dashboard`
 streamlit run app.py
 ```
+
 
 ## Distributed Dashboard
 
