@@ -106,13 +106,13 @@ def test_one_hot_encode():
     df = pd.DataFrame(
         {
             "grade": [
-                "common",
-                "epic",
-                "uncommon",
-                "rare",
-                "rare",
-                "epic",
-                "legendary",
+                "Common",
+                "Epic",
+                "Uncommon",
+                "Rare",
+                "Rare",
+                "Epic",
+                "Legendary",
             ],
         }
     )
@@ -121,14 +121,14 @@ def test_one_hot_encode():
 
     assert df_encoded.shape == (7, 5)
     assert df_encoded.columns.tolist() == [
-        "common",
-        "uncommon",
-        "rare",
-        "epic",
-        "legendary",
+        "Common",
+        "Uncommon",
+        "Rare",
+        "Epic",
+        "Legendary",
     ]
-    assert df_encoded["common"].tolist() == [1, 0, 0, 0, 0, 0, 0]
-    assert df_encoded["uncommon"].tolist() == [0, 0, 1, 0, 0, 0, 0]
-    assert df_encoded["rare"].tolist() == [0, 0, 0, 1, 1, 0, 0]
-    assert df_encoded["epic"].tolist() == [0, 1, 0, 0, 0, 1, 0]
-    assert df_encoded["legendary"].tolist() == [0, 0, 0, 0, 0, 0, 1]
+    assert df_encoded["Common"].tolist() == [1, 0, 0, 0, 0, 0, 0]
+    assert df_encoded["Uncommon"].tolist() == [0, 0, 1, 0, 0, 0, 0]
+    assert df_encoded["Rare"].tolist() == [0, 0, 0, 1, 1, 0, 0]
+    assert df_encoded["Epic"].tolist() == [0, 1, 0, 0, 0, 1, 0]
+    assert df_encoded["Legendary"].tolist() == [0, 0, 0, 0, 0, 0, 1]

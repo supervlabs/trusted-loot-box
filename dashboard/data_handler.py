@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 from fake_data import get_fake_rewards
 
-GRADES = ("common", "uncommon", "rare", "epic", "legendary")
+GRADES = ("Common", "Uncommon", "Rare", "Epic", "Legendary")
 PROBABILITIES = (1 - (0.3 + 0.05 + 0.008 + 0.0001), 0.3, 0.05, 0.008, 0.0001)
 assert len(GRADES) == len(PROBABILITIES)
 assert sum(PROBABILITIES) == 1
