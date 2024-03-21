@@ -31,8 +31,7 @@ def convert_json_to_df(json_dicts: list[dict]) -> pd.DataFrame:
         "created_at",
         "grade",
         "item_name",
-        "total_minted",
-        "token_data_id",
+        "txn_hash",
     )
     selected_json_dicts = [
         {k: v for k, v in d.items() if k in selected_columns} for d in json_dicts
