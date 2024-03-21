@@ -156,7 +156,8 @@ st.data_editor(
         "item_name": st.column_config.TextColumn("Item Name", width=150),
         "txn_hash": st.column_config.TextColumn("Txn Hash"),
         "link": st.column_config.LinkColumn(
-            "Aptos Explorer Link", display_text="Link to Aptos Explorer"
+            "Aptos Explorer Link",
+            display_text="🔗 Link to Aptos Explorer",
         ),
     },
     disabled=True,
