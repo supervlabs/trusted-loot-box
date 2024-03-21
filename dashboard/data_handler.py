@@ -38,6 +38,7 @@ def convert_json_to_df(json_dicts: list[dict]) -> pd.DataFrame:
         "created_at",
         "grade",
         "item_name",
+        "item_minted",
         "txn_hash",
     )
     selected_json_dicts = [
@@ -48,6 +49,8 @@ def convert_json_to_df(json_dicts: list[dict]) -> pd.DataFrame:
         df["created_at"] = pd.to_datetime(
             df["created_at"], format="%Y-%m-%dT%H:%M:%S.%fZ"
         )
+        df["item_name"] = df["item_name"] + " #" + df["item_minted"].astype(str)
+        df.drop(columns=["item_minted"], inplace=True)
     return df
 
 

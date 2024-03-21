@@ -152,7 +152,7 @@ st.data_editor(
             "DateTime (UTC)", format="YYYY-MM-DD HH:mm:ss.SSS"
         ),
         "grade": st.column_config.TextColumn("Grade"),
-        "item_name": st.column_config.TextColumn("Item Name"),
+        "item_name": st.column_config.TextColumn("Item Name", width=150),
         "txn_hash": st.column_config.TextColumn("Txn Hash"),
         "link": st.column_config.LinkColumn(
             "Aptos Explorer Link", display_text="Link to Aptos Explorer"

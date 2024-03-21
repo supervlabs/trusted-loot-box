@@ -111,7 +111,12 @@ def test_json_to_df():
         "txn_hash",
     ]
     assert df["grade"].tolist() == ["Uncommon", "Common", "Common", "Common"]
-    assert df["item_name"].tolist() == ["Gentlepeng", "Monkin", "Rubicle", "Monkin"]
+    assert df["item_name"].tolist() == [
+        "Gentlepeng #1",
+        "Monkin #2",
+        "Rubicle #1",
+        "Monkin #4",
+    ]
     assert df["txn_hash"].tolist() == [
         "0x1dd9e37675efe20ff2d65b6faddfde3ab8b94646947346ba3ad7cd77d619bc24",
         "0x29cdb96ba926f6aa70c288a81b546fe8c0ae1038e317a443103ff29c6fa4946f",
