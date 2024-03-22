@@ -2,6 +2,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 from data_handler import GRADES, PROBABILITIES, get_rewards_data
+from streamlit_autorefresh import st_autorefresh
 
 st.set_page_config(
     page_title="Trusted Loot Box",
@@ -41,9 +42,6 @@ def show_rewards_probabilities(col):
 
 
 st.title("Trusted Loot Box - Dashboard")
-
-if st.button("Click to Refresh Data"):
-    st.rerun()
 
 if "last_updated" not in st.session_state:
     st.session_state.last_updated = "2024-01-01T00:00:00Z"
@@ -162,3 +160,5 @@ st.data_editor(
     },
     disabled=True,
 )
+
+st_autorefresh(interval=10 * 1000, limit=100, key="trusted_loot_box")
