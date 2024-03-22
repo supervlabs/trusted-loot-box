@@ -117,6 +117,7 @@ with right:
         df.set_index("created_at").iloc[:, 3:].cumsum(),
         y="Legendary",
         title="Legendary Time Series",
+        color_discrete_sequence=colors[-1:],
     ).update_layout(xaxis_title="Date", yaxis_title="Cumulative Count")
     st.plotly_chart(fig)
 
