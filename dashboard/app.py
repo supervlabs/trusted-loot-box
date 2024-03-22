@@ -16,6 +16,8 @@ st.set_page_config(
     },
 )
 
+colors = ["#ffffff", "#a1ce5a", "#53b4dd", "#bc64ea", "#fedb50"]
+
 
 def show_rewards_probabilities(col):
     # TODO: Get real rewards table from api
@@ -71,10 +73,12 @@ with st.container():
 
         n_metrics = n_reward_grades + 1
         st.markdown("**Metrics:** How many rewards have been distributed by grades?")
-        for i, col in enumerate(st.columns([1] * n_metrics)):
+        for i, col in enumerate(st.columns(n_metrics + 1)):
             if i == n_metrics - 1:
                 # Add a rainbow star for the last metric which is the rarest
                 col.metric(label=f":rainbow[⭐️ {names[i]}]", value=values[i])
+            elif i == n_metrics:
+                continue
             else:
                 col.metric(label=names[i], value=values[i])
 
@@ -89,6 +93,7 @@ with left:
         values=values[1:],
         names=names[1:],
         title="Rewards Distribution",
+        color_discrete_sequence=colors,
     )
     st.plotly_chart(fig)
 
@@ -96,7 +101,9 @@ with left:
 with right:
     # Show Time Series for All Rewards
     fig = px.line(
-        df.set_index("created_at").iloc[:, 3:].cumsum(), title="Rewards Time Series"
+        df.set_index("created_at").iloc[:, 3:].cumsum(),
+        title="Rewards Time Series",
+        color_discrete_sequence=colors,
     ).update_layout(
         xaxis_title="Date",
         yaxis_title="Cumulative Count",
