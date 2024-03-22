@@ -19,8 +19,8 @@ st.set_page_config(
 
 def show_rewards_probabilities(col):
     # TODO: Get real rewards table from api
-    reward_grades = GRADES
-    reward_probabilities = PROBABILITIES
+    reward_grades = GRADES[::-1]
+    reward_probabilities = PROBABILITIES[::-1]
     rewards_table = pd.DataFrame(
         {"Rewards": reward_grades, "Probabilities": reward_probabilities}
     )

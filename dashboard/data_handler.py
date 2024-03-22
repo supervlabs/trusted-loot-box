@@ -50,6 +50,7 @@ def convert_json_to_df(json_dicts: list[dict]) -> pd.DataFrame:
             df["created_at"], format="%Y-%m-%dT%H:%M:%S.%fZ"
         )
         df["item_name"] = df["item_name"] + " #" + df["item_minted"].astype(str)
+        df.sort_values("created_at", inplace=True)
         df.drop(columns=["item_minted"], inplace=True)
     return df
 
