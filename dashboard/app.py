@@ -64,7 +64,7 @@ with st.container():
     left, right = st.columns(2)
     with left:
         # Show Metrics
-        df_count = df.iloc[:, 4:].sum()
+        df_count = df.iloc[:, 5:].sum()
         n_trial = df_count.sum()
         n_reward_grades = len(df_count)
         names = df_count.index.tolist()
@@ -101,7 +101,7 @@ with left:
 with right:
     # Show Time Series for All Rewards
     fig = px.line(
-        df.set_index("created_at").iloc[:, 3:].cumsum(),
+        df.set_index("created_at").iloc[:, 4:].cumsum(),
         title="Rewards Time Series",
         color_discrete_sequence=colors,
     ).update_layout(
@@ -114,7 +114,7 @@ with right:
 with right:
     # Show Time Series for the Rarest Reward and confidence interval
     fig = px.line(
-        df.set_index("created_at").iloc[:, 3:].cumsum(),
+        df.set_index("created_at").iloc[:, 4:].cumsum(),
         y="Legendary",
         title="Legendary Time Series",
         color_discrete_sequence=colors[-1:],
@@ -123,7 +123,7 @@ with right:
 
 with left:
     # Show Heatmap for Rewards vs. Trials
-    df_heatmap = df.iloc[:, 4:].T
+    df_heatmap = df.iloc[:, 5:].T
     df_heatmap = df_heatmap.reindex(
         index=df_heatmap.index[::-1]
     )  # Reverse the order of rows
@@ -139,17 +139,25 @@ with left:
 
 
 # Show the trial table
-df_for_table = df.copy().iloc[:, :4]
+df_for_table = df.copy().iloc[:, :5]
 df_for_table.index = df_for_table.index + 1
 df_for_table.index.name = "# Trials"
 
 
-def make_link(txn_hash):
+def make_reward_link(token_data_id):
+    url = f"https://explorer.aptoslabs.com/token/{token_data_id}/0?network=randomnet"
+    return url
+
+
+def make_dice_link(txn_hash):
     url = f"https://explorer.aptoslabs.com/txn/{txn_hash}/userTxnOverview?network=randomnet"
     return url
 
 
-df_for_table["link"] = df_for_table["txn_hash"].apply(make_link)
+df_for_table["link_to_reward"] = df_for_table["token_data_id"].apply(make_reward_link)
+df_for_table["link"] = df_for_table["txn_hash"].apply(make_dice_link)
+
+df_for_table.drop(columns=["token_data_id", "txn_hash"], inplace=True)
 
 st.markdown("**Trials Table:** The list of Rewards for each trial")
 st.data_editor(
@@ -160,9 +168,12 @@ st.data_editor(
         ),
         "grade": st.column_config.TextColumn("Grade"),
         "item_name": st.column_config.TextColumn("Item Name", width=150),
+        "link_to_reward": st.column_config.LinkColumn(
+            "Reward Link", display_text="🔗 Link to Aptos Explorer"
+        ),
         "txn_hash": st.column_config.TextColumn("Txn Hash"),
         "link": st.column_config.LinkColumn(
-            "Aptos Explorer Link",
+            "Dice Link",
             display_text="🔗 Link to Aptos Explorer",
         ),
     },

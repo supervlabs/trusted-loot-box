@@ -246,13 +246,14 @@ def test_get_json_from_api():
 def test_get_rewards_data_live():
     df = get_rewards_data()
     assert df.shape[0] > 0
-    assert df.shape[1] == 9
+    assert df.shape[1] == 10
     assert df["created_at"].dtype == "datetime64[ns]"
     assert df["created_at"].is_monotonic_increasing
     assert df.columns.tolist() == [
         "created_at",
         "grade",
         "item_name",
+        "token_data_id",
         "txn_hash",
         "Common",
         "Uncommon",

@@ -38,6 +38,7 @@ def convert_json_to_df(json_dicts: list[dict]) -> pd.DataFrame:
         "created_at",
         "grade",
         "item_name",
+        "token_data_id",
         "item_minted",
         "txn_hash",
     )
