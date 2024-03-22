@@ -11,7 +11,7 @@ module supervlabs::gacha_rounds {
     const EINVALID_PSEUDO_RANDOM_RANGE: u64 = 3;
     const ENOT_AUTHORIZED_OPERATION: u64 = 4;
     const EGACHA_ROUND_LOG_NOT_FOUND: u64 = 5;
-
+    const EPAST_GACHA_ROUND_NOT_DELETED: u64 = 6;
 
     const GRADE_COMMON: vector<u8> = b"common"; // common must not be used
     const GRADE_UNCOMMON: vector<u8> = b"uncommon"; // 0th index
@@ -141,6 +141,24 @@ module supervlabs::gacha_rounds {
             });
             return 0
         }
+    }
+
+    public fun delete(round_obj: &signer, target_round: u64) acquires GachaRounds {
+        let obj_address = signer::address_of(round_obj);
+        assert!(
+            exists<GachaRounds>(obj_address),
+            error::not_found(EGACHA_ROUNDS_NOT_FOUND)
+        );
+        let grs = borrow_global_mut<GachaRounds>(obj_address);
+        assert!(
+            target_round > grs.current_round, 
+            error::not_found(EPAST_GACHA_ROUND_NOT_DELETED)
+        );
+        assert!(
+            target_round < vector::length(&grs.rounds), 
+            error::not_found(EPAST_GACHA_ROUND_NOT_DELETED)
+        );
+        vector::remove(&mut grs.rounds, target_round);
     }
 
     public fun set_round_log(round_obj: address, target_ref: &object::ConstructorRef, current_round: u64) acquires GachaRounds {
