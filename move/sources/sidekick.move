@@ -7,13 +7,13 @@ module supervlabs::sidekick {
     use aptos_framework::timestamp;
     use aptos_token_objects::property_map;
     use aptos_token_objects::token;
-        use std::error;
+    use std::error;
     use std::option::{Self, Option};
     use std::signer;
     use std::string;
     use std::vector;
 
-    use aptos_framework::transaction_context;
+    // use aptos_framework::transaction_context;
     use supervlabs::gacha_rounds;
     use supervlabs::gacha_item;
     use supervlabs::sidekick_capsule;
@@ -30,12 +30,12 @@ module supervlabs::sidekick {
     }
 
     fun init_module(package: &signer) {
-        let class_signer = orm_class::create_class_as_collection<Sidekick>(
+        let class_address = orm_class::update_class_as_collection<Sidekick>(
             package,
             string::utf8(b"SuperV Sidekicks"),
             true, true, false, true, false, true, false,
-            string::utf8(b"https://public.vir.supervlabs.io/virweb/nft/test_sidekicks/8.png"),
-            string::utf8(b"The Sidekick Collection of Supervillain Idle RPG. Sidekicks each possess unique attributes, allowing Villains to mount them to maximize their potential."),
+            string::utf8(b"https://public.vir.supervlabs.io/virweb/nft/sidekicks/collection.png"),
+            string::utf8(b"Sidekicks, as faithful allies of the Villains, stand by their side and help maximize the Villains' potential. They typically inhabit the wild before being captured by Villains. By establishing a deep connection, they are reborn as true Sidekicks."),
             0,
             true,
             true,
@@ -46,7 +46,10 @@ module supervlabs::sidekick {
         orm_module::set<Sidekick>(
             package,
             signer::address_of(package),
-            signer::address_of(&class_signer),
+            class_address,
+        );
+        let class_signer = orm_class::load_class_signer(package,
+            object::address_to_object<orm_class::OrmClass>(class_address)
         );
         let package_address = signer::address_of(package);
         let grades = vector[
@@ -55,6 +58,7 @@ module supervlabs::sidekick {
             string::utf8(b"epic"),
             string::utf8(b"legendary"),
         ];
+        // gacha_rounds::add(&class_signer, package_address, grades, vector[30000000, 5000000, 800000, 200000], 100000000); // 30%, 5%, 0.8%, 0.2%
         // gacha_rounds::add(&class_signer, package_address, grades, vector[30000000, 5000000, 800000, 20000], 100000000); // 30%, 5%, 0.8%, 0.02%
         gacha_rounds::add(&class_signer, package_address, grades, vector[30000000, 5000000, 800000, 10000], 100000000); // 30%, 5%, 0.8%, 0.01%
         // gacha_rounds::add(&class_signer, package_address, grades, vector[30000000, 5000000, 800000, 5000], 100000000); // 30%, 5%, 0.8%, 0.005%
@@ -63,6 +67,12 @@ module supervlabs::sidekick {
         // gacha_rounds::add(&class_signer, package_address, grades, vector[30000000, 5000000, 800000, 1500], 100000000); // 30%, 5%, 0.8%, 0.0015%
         // gacha_rounds::add(&class_signer, package_address, grades, vector[30000000, 5000000, 800000, 1000], 100000000); // 30%, 5%, 0.8%, 0.001%
         // gacha_rounds::add(&class_signer, package_address, grades, vector[30000000, 5000000, 800000, 500], 100000000); // 30%, 5%, 0.8%, 0.0005%
+    }
+
+    entry fun update_module(user: &signer) {
+        let (orm_creator, _orm_class) = orm_module::get<Sidekick>(@supervlabs);
+        let package = orm_creator::load_creator(user, orm_creator);
+        init_module(&package);
     }
 
     fun create_object(
@@ -82,10 +92,11 @@ module supervlabs::sidekick {
             legendary,
             denominator,
         ) = gacha_rounds::load_drop_rates_4(class_address);
-        let txnhash = transaction_context::get_transaction_hash();
-        let current_time = timestamp::now_microseconds();
-        let roll1 = random::generate_u64(
-            sidekick_capsule, current_time, salt, txnhash, 0, denominator);
+        // let _txnhash = transaction_context::get_transaction_hash();
+        // let _current_time = timestamp::now_microseconds();
+        // let roll1 = random::generate_u64(
+        //     sidekick_capsule, current_time, salt, txnhash, 0, denominator);
+        let (roll1, output1) = random::roll_u64(0, denominator);
         let (group, start_index, end_index, _num) = if (roll1 < legendary) {
             gacha_rounds::round_up(&creator_signer, class_address);
             gacha_item::get_item_group(string::utf8(b"sidekick/legendary"))
@@ -98,8 +109,9 @@ module supervlabs::sidekick {
         } else {
             gacha_item::get_item_group(string::utf8(b"sidekick/common"))
         };
-        let roll2 = random::generate_u64(
-            sidekick_capsule, current_time, salt + 777, txnhash, start_index, end_index);
+        // let roll2 = random::generate_u64(
+        //     sidekick_capsule, current_time, salt + 777, txnhash, start_index, end_index);
+        let (roll2, output2) = random::roll_u64(start_index, end_index);
         let (name, uri, description, _, property_keys, property_types, property_values) 
             = gacha_item::load_item_data(&creator_signer, group, roll2);
         let ref = token::create(
@@ -121,8 +133,10 @@ module supervlabs::sidekick {
             property_values,
         );
         // burn sidekick_capsule
-        let sidekick_capsule_obj = object::address_to_object<sidekick_capsule::SidekickCapsule>(sidekick_capsule);
-        sidekick_capsule::delete_object(user, sidekick_capsule_obj);
+        if (sidekick_capsule != @0x0) {
+            let sidekick_capsule_obj = object::address_to_object<sidekick_capsule::SidekickCapsule>(sidekick_capsule);
+            sidekick_capsule::delete_object(user, sidekick_capsule_obj);
+        };
         let updated_at = timestamp::now_seconds();
         move_to<Sidekick>(&object_signer, Sidekick {
             updated_at: updated_at, salt: salt
@@ -132,8 +146,11 @@ module supervlabs::sidekick {
             user, obj, string::utf8(b"sidekick_capsule"), sidekick_capsule,
         );
         gacha_rounds::set_round_log(class_address, &ref, current_round);
-        random::store(&object_signer, sidekick_capsule, current_time, salt, txnhash, 0, denominator);
-        random::store(&object_signer, sidekick_capsule, current_time, salt + 777, txnhash, start_index, end_index);
+        // random::store(&object_signer, sidekick_capsule, current_time, salt, txnhash, 0, denominator);
+        // random::store(&object_signer, sidekick_capsule, current_time, salt + 777, txnhash, start_index, end_index);
+
+        random::store_roll_u64(&object_signer, output1);
+        random::store_roll_u64(&object_signer, output2);
 
         if (option::is_some(&to)) {
             let destination = option::extract<address>(&mut to);
@@ -238,7 +255,8 @@ module supervlabs::sidekick {
             current_round, _selected_round,
             numerators, denominator, _updated_at
         ) = gacha_rounds::get_round_log_with_drop_rates(class_address, object);
-        let (_rand_inputs, rand_results) = random::replay_generated_u64(object);
+        // let (_rand_inputs, rand_results) = random::replay_generated_u64(object);
+        let rand_results = random::replay_roll_u64(object);
         let roll1 = *vector::borrow(&rand_results, 0);
         let roll2 = *vector::borrow(&rand_results, 1);
         let legendary = *vector::borrow(&numerators, 3);
