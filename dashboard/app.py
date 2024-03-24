@@ -54,6 +54,7 @@ if "df" not in st.session_state:
 new_df = get_rewards_data(since=st.session_state.last_updated)
 df = pd.concat([st.session_state.df, new_df], ignore_index=True)
 df.drop_duplicates(subset="txn_hash", keep="last", inplace=True)
+df.reset_index(drop=True, inplace=True)
 
 st.session_state.df = df
 latest_datetime = df["created_at"].max().isoformat() + "Z"
