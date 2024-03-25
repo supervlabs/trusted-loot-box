@@ -8,7 +8,7 @@ from data_handler import (
     get_api_url,
     get_dataframe,
     get_json_from_api,
-    get_rewards_data,
+    get_rewards,
     get_rewards_data_for_test,
     one_hot_encode,
 )
@@ -244,7 +244,7 @@ def test_get_json_from_api():
 
 
 def test_get_rewards_data_live():
-    df = get_rewards_data()
+    df = get_rewards()
     assert df.shape[0] > 0
     assert df.shape[1] == 10
     assert df["created_at"].dtype == "datetime64[ns]"
