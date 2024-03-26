@@ -1,9 +1,16 @@
+from datetime import datetime, timedelta
+
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-from data_handler import GRADES, PROBABILITIES, get_rewards_data, get_reward_counts, rewards_fetch_limit
+from data_handler import (
+    GRADES,
+    PROBABILITIES,
+    get_reward_counts,
+    get_rewards_data,
+    rewards_fetch_limit,
+)
 from streamlit_autorefresh import st_autorefresh
-from datetime import datetime, timedelta
 
 st.set_page_config(
     page_title="Trusted Loot Box",
@@ -46,7 +53,7 @@ def show_rewards_probabilities(col):
 
 def get_next(since: str | None = None) -> str:
     if since is None:
-        three_days_ago = datetime.now() - timedelta(days=3)
+        three_days_ago = datetime.now() - timedelta(days=7)
         return three_days_ago.isoformat().rsplit("Z", 1)[0][:-1] + "@"
     return since.rsplit("Z", 1)[0][:-1] + "@"
 
@@ -64,17 +71,19 @@ def get_rewards() -> pd.DataFrame:
         _df = pd.concat([st.session_state.df, new_df], ignore_index=True)
         _df.drop_duplicates(subset="txn_hash", keep="last", inplace=True)
         _df.reset_index(drop=True, inplace=True)
-        if (len(_df) > rewards_fetch_limit):
+        if len(_df) > rewards_fetch_limit:
             _df = _df.iloc[-rewards_fetch_limit:, :]
         st.session_state.df = _df
         latest_datetime = _df["skey"].max()
         st.session_state.last_updated = get_next(latest_datetime)
     return st.session_state.df
 
+
 def get_next_reward_counts(since: str | None = None) -> str:
     if since is None:
         return "2024-03-15T00:00:00Z"
     return since.rsplit("Z", 1)[0][:-1] + "@"
+
 
 def get_all_reward_counts() -> dict[str, int]:
     if "last_updated_time" not in st.session_state:
@@ -86,17 +95,18 @@ def get_all_reward_counts() -> dict[str, int]:
         since = st.session_state.last_updated_time
         reward_counts, latest_update = get_reward_counts(since)
         st.session_state.last_updated_time = get_next_reward_counts(latest_update)
-        if (reward_counts is None):
+        if reward_counts is None:
             break
         for k, v in reward_counts.items():
             st.session_state.reward_counts[k] += v
     return st.session_state.reward_counts
 
+
 st.title("Trusted Loot Box - Dashboard")
 
 reward_counts = get_all_reward_counts()
 names = ["Total Trials"] + list(GRADES)
-values = [ reward_counts[name] for name in names]
+values = [reward_counts[name] for name in names]
 df = get_rewards()
 
 with st.container():

@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from urllib.parse import urlencode, urlunparse
 
 import pandas as pd
@@ -6,7 +7,6 @@ import requests
 import streamlit as st
 from dotenv import dotenv_values
 from fake_data import get_fake_rewards
-from datetime import datetime
 
 GRADES = ("Common", "Uncommon", "Rare", "Epic", "Legendary")
 PROBABILITIES = (1 - (0.3 + 0.05 + 0.008 + 0.0001), 0.3, 0.05, 0.008, 0.0001)
@@ -29,19 +29,20 @@ def get_rewards_data_for_test(
     return df
 
 
-@st.cache_resource(ttl=60)
+@st.cache_resource(ttl=60 * 60 * 24)
 def get_rewards_data(since: str | None = None) -> pd.DataFrame:
     print("Fetching get_rewards_data", since)
     json_data = get_json_from_api(since_date=since)
     df = get_dataframe(json_data) if json_data else pd.DataFrame()
     return df
 
+
 @st.cache_resource()
 def get_reward_counts(since: str | None = None) -> pd.DataFrame:
     print("Fetching get_reward_counts", since)
     json_data = get_json_from_api(since_date=since)
     df = get_dataframe(json_data) if json_data else pd.DataFrame()
-    if (len(df) == 0):
+    if len(df) == 0:
         return None, datetime.now().isoformat()
     latest_update = df["skey"].max()
     rewards = ["Total Trials"] + list(GRADES)
@@ -54,6 +55,7 @@ def get_reward_counts(since: str | None = None) -> pd.DataFrame:
     for i, name in enumerate(names):
         reward_counts[name] = values[i]
     return reward_counts, latest_update
+
 
 def convert_json_to_df(json_dicts: list[dict]) -> pd.DataFrame:
     selected_columns = (
