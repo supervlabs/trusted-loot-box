@@ -31,7 +31,7 @@ def get_rewards_data_for_test(
 
 @st.cache_resource(ttl=60)
 def get_rewards_data(since: str | None = None) -> pd.DataFrame:
-    print("Fetching next data", since)
+    print("Fetching get_rewards_data", since)
     json_data = get_json_from_api(since_date=since)
     df = get_dataframe(json_data) if json_data else pd.DataFrame()
     return df
