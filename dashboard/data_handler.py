@@ -47,7 +47,7 @@ def get_reward_counts(since: str | None = None) -> pd.DataFrame:
     latest_update = df["skey"].max()
     rewards = ["Total Trials"] + list(GRADES)
     reward_counts = dict.fromkeys(rewards, 0)
-    df_count = df.iloc[:, 6:].sum()
+    df_count = df.iloc[:, 7:].sum()
     n_trial = df_count.sum()
     names = df_count.index.tolist()
     names = ["Total Trials"] + [n.capitalize() for n in names]
@@ -64,6 +64,7 @@ def convert_json_to_df(json_dicts: list[dict]) -> pd.DataFrame:
         "item_name",
         "token_data_id",
         "item_minted",
+        "total_minted",
         "txn_hash",
         "skey",
     )
