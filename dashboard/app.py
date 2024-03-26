@@ -169,7 +169,7 @@ def make_dice_link(txn_hash):
 df_for_table["link_to_reward"] = df_for_table["token_data_id"].apply(make_reward_link)
 df_for_table["link"] = df_for_table["txn_hash"].apply(make_dice_link)
 
-df_for_table.drop(columns=["token_data_id", "txn_hash"], inplace=True)
+df_for_table.drop(columns=["token_data_id", "txn_hash", "skey"], inplace=True)
 
 st.markdown("**Trials Table:** The list of Rewards for each trial")
 st.data_editor(
