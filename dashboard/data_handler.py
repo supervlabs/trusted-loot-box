@@ -11,7 +11,7 @@ GRADES = ("Common", "Uncommon", "Rare", "Epic", "Legendary")
 PROBABILITIES = (1 - (0.3 + 0.05 + 0.008 + 0.0001), 0.3, 0.05, 0.008, 0.0001)
 assert len(GRADES) == len(PROBABILITIES)
 assert sum(PROBABILITIES) == 1
-
+rewards_fetch_limit = 100
 
 @st.cache_data(ttl=10)
 def get_rewards_data_for_test(
@@ -26,12 +26,11 @@ def get_rewards_data_for_test(
 
     return df
 
-
-@st.cache_data(ttl=10, show_spinner=False)
+@st.cache_resource(ttl=60)
 def get_rewards_data(since: str | None = None) -> pd.DataFrame:
+    print("Fetching next data", since)
     json_data = get_json_from_api(since_date=since)
     return get_dataframe(json_data) if json_data else pd.DataFrame()
-
 
 def convert_json_to_df(json_dicts: list[dict]) -> pd.DataFrame:
     selected_columns = (
@@ -41,6 +40,7 @@ def convert_json_to_df(json_dicts: list[dict]) -> pd.DataFrame:
         "token_data_id",
         "item_minted",
         "txn_hash",
+        "skey",
     )
     selected_json_dicts = [
         {k: v for k, v in d.items() if k in selected_columns} for d in json_dicts
@@ -73,7 +73,7 @@ def get_dataframe(json_dicts: list[dict]) -> pd.DataFrame:
 
 def get_api_url(api_url: str | None = None, since_date: str | None = None) -> str:
     if since_date is None:
-        since_date = "2024-01-01T00:00:00Z"
+        since_date = "2024-03-16T00:00:00Z"
 
     if api_url is None:
         if (api_url := os.getenv("API_URL")) is None:
@@ -82,7 +82,7 @@ def get_api_url(api_url: str | None = None, since_date: str | None = None) -> st
     if api_url is None:
         raise ValueError("API_URL is not set in .env file or in environment variable.")
 
-    query_params = {"since": since_date}
+    query_params = {"since": since_date, "limit": rewards_fetch_limit }
     query_string = urlencode(query_params)
     return urlunparse(("", "", api_url, "", query_string, ""))
 

@@ -42,30 +42,38 @@ def show_rewards_probabilities(col):
             },
         )
 
+def get_next(since: str | None = None) -> str:
+    if since is None:
+        return "2024-03-15T00:00:00Z"
+    return since.rsplit('Z', 1)[0][:-1] + '@'
+
+def get_rewards() -> pd.DataFrame:
+    if "last_updated" not in st.session_state:
+        st.session_state.last_updated = get_next(None)
+    if "df" not in st.session_state:
+        st.session_state.df = pd.DataFrame()
+    while True:
+        since = st.session_state.last_updated
+        new_df = get_rewards_data(since)
+        if (new_df is None) or new_df.empty:
+            break
+        _df = pd.concat([st.session_state.df, new_df], ignore_index=True)
+        _df.drop_duplicates(subset="txn_hash", keep="last", inplace=True)
+        _df.reset_index(drop=True, inplace=True)
+        st.session_state.df = _df
+        latest_datetime = _df["skey"].max()
+        st.session_state.last_updated = get_next(latest_datetime)
+    return st.session_state.df
 
 st.title("Trusted Loot Box - Dashboard")
 
-if "last_updated" not in st.session_state:
-    st.session_state.last_updated = "2024-01-01T00:00:00Z"
-
-if "df" not in st.session_state:
-    st.session_state.df = pd.DataFrame()
-
-new_df = get_rewards_data(since=st.session_state.last_updated)
-df = pd.concat([st.session_state.df, new_df], ignore_index=True)
-df.drop_duplicates(subset="txn_hash", keep="last", inplace=True)
-df.reset_index(drop=True, inplace=True)
-
-st.session_state.df = df
-latest_datetime = df["created_at"].max().isoformat() + "Z"
-st.session_state.last_updated = latest_datetime
-
+df = get_rewards()
 
 with st.container():
     left, right = st.columns(2)
     with left:
         # Show Metrics
-        df_count = df.iloc[:, 5:].sum()
+        df_count = df.iloc[:, 6:].sum()
         n_trial = df_count.sum()
         n_reward_grades = len(df_count)
         names = df_count.index.tolist()
@@ -102,7 +110,7 @@ with left:
 with right:
     # Show Time Series for All Rewards
     fig = px.line(
-        df.set_index("created_at").iloc[:, 4:].cumsum(),
+        df.set_index("created_at").iloc[:, 5:].cumsum(),
         title="Rewards Time Series",
         color_discrete_sequence=colors,
     ).update_layout(
@@ -124,7 +132,7 @@ with right:
 
 with left:
     # Show Heatmap for Rewards vs. Trials
-    df_heatmap = df.iloc[:, 5:].T
+    df_heatmap = df.iloc[:, 6:].T
     df_heatmap = df_heatmap.reindex(
         index=df_heatmap.index[::-1]
     )  # Reverse the order of rows
@@ -140,7 +148,7 @@ with left:
 
 
 # Show the trial table
-df_for_table = df.copy().iloc[:, :5]
+df_for_table = df.copy().iloc[-100:, :6]
 df_for_table.index = df_for_table.index + 1
 df_for_table.index.name = "# Trials"
 
