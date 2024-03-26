@@ -42,10 +42,12 @@ def show_rewards_probabilities(col):
             },
         )
 
+
 def get_next(since: str | None = None) -> str:
     if since is None:
         return "2024-03-15T00:00:00Z"
-    return since.rsplit('Z', 1)[0][:-1] + '@'
+    return since.rsplit("Z", 1)[0][:-1] + "@"
+
 
 def get_rewards() -> pd.DataFrame:
     if "last_updated" not in st.session_state:
@@ -64,6 +66,7 @@ def get_rewards() -> pd.DataFrame:
         latest_datetime = _df["skey"].max()
         st.session_state.last_updated = get_next(latest_datetime)
     return st.session_state.df
+
 
 st.title("Trusted Loot Box - Dashboard")
 
@@ -189,4 +192,4 @@ st.data_editor(
     disabled=True,
 )
 
-st_autorefresh(interval=10 * 1000, limit=100, key="trusted_loot_box")
+st_autorefresh(interval=15 * 1000, limit=10, key="trusted_loot_box")
