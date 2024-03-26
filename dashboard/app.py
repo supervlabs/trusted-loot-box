@@ -1,7 +1,7 @@
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-from data_handler import GRADES, PROBABILITIES, get_rewards_data
+from data_handler import GRADES, PROBABILITIES, get_rewards_data, get_reward_counts
 from streamlit_autorefresh import st_autorefresh
 
 st.set_page_config(
@@ -67,23 +67,34 @@ def get_rewards() -> pd.DataFrame:
         st.session_state.last_updated = get_next(latest_datetime)
     return st.session_state.df
 
+def get_all_reward_counts() -> dict[str, int]:
+    if "last_updated_time" not in st.session_state:
+        st.session_state.last_updated_time = get_next(None)
+    if "reward_counts" not in st.session_state:
+        rewards = ["Total Trials"] + list(GRADES)
+        st.session_state.reward_counts = dict.fromkeys(rewards, 0)
+    while True:
+        since = st.session_state.last_updated_time
+        reward_counts, latest_update = get_reward_counts(since)
+        st.session_state.last_updated_time = get_next(latest_update)
+        if (reward_counts is None):
+            break
+        for k, v in reward_counts.items():
+            st.session_state.reward_counts[k] += v
+    return st.session_state.reward_counts
 
 st.title("Trusted Loot Box - Dashboard")
 
+reward_counts = get_all_reward_counts()
+names = ["Total Trials"] + list(GRADES)
+values = [ reward_counts[name] for name in names]
 df = get_rewards()
 
 with st.container():
     left, right = st.columns(2)
     with left:
         # Show Metrics
-        df_count = df.iloc[:, 6:].sum()
-        n_trial = df_count.sum()
-        n_reward_grades = len(df_count)
-        names = df_count.index.tolist()
-        names = ["Total Trials"] + [n.capitalize() for n in names]
-        values = [n_trial] + df_count.tolist()
-
-        n_metrics = n_reward_grades + 1
+        n_metrics = len(GRADES) + 1
         st.markdown("**Metrics:** How many rewards have been distributed by grades?")
         for i, col in enumerate(st.columns(n_metrics + 1)):
             if i == n_metrics - 1:
