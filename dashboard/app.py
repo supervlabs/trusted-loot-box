@@ -143,7 +143,7 @@ with left:
 with right:
     # Show Time Series for All Rewards
     fig = px.line(
-        df.set_index("created_at").iloc[:, 5:].cumsum(),
+        df.set_index("created_at").iloc[:, 6:].cumsum(),
         title="Rewards Time Series",
         color_discrete_sequence=colors,
     ).update_layout(
@@ -156,7 +156,7 @@ with right:
 with right:
     # Show Time Series for the Rarest Reward and confidence interval
     fig = px.line(
-        df.set_index("created_at").iloc[:, 4:].cumsum(),
+        df.set_index("created_at").iloc[:, 6:].cumsum(),
         y="Legendary",
         title="Legendary Time Series",
         color_discrete_sequence=colors[-1:],
@@ -165,7 +165,7 @@ with right:
 
 with left:
     # Show Heatmap for Rewards vs. Trials
-    df_heatmap = df.iloc[:, 6:].T
+    df_heatmap = df.iloc[:, 7:].T
     df_heatmap = df_heatmap.reindex(
         index=df_heatmap.index[::-1]
     )  # Reverse the order of rows
@@ -181,8 +181,8 @@ with left:
 
 
 # Show the trial table
-df_for_table = df.copy().iloc[-100:, :6]
-df_for_table.index = df_for_table.index + 1
+df_for_table = df.copy().iloc[-100:, :7]
+df_for_table.set_index("total_minted", inplace=True)
 df_for_table.index.name = "# Trials"
 
 
@@ -199,7 +199,7 @@ def make_dice_link(txn_hash):
 df_for_table["link_to_reward"] = df_for_table["token_data_id"].apply(make_reward_link)
 df_for_table["link"] = df_for_table["txn_hash"].apply(make_dice_link)
 
-df_for_table.drop(columns=["token_data_id", "txn_hash"], inplace=True)
+df_for_table.drop(columns=["token_data_id", "txn_hash", "skey"], inplace=True)
 
 st.markdown("**Trials Table:** The list of Rewards for each trial")
 st.data_editor(
