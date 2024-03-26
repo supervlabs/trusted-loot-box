@@ -38,7 +38,7 @@ def get_rewards_data(since: str | None = None) -> pd.DataFrame:
 
 
 @st.cache_resource()
-def get_reward_counts(since: str | None = None) -> pd.DataFrame:
+def get_reward_counts(since: str | None = None) -> tuple[dict[str, int] | None, str]:
     print("Fetching get_reward_counts", since)
     json_data = get_json_from_api(since_date=since)
     df = get_dataframe(json_data) if json_data else pd.DataFrame()

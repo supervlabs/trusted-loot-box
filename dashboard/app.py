@@ -35,6 +35,7 @@ def show_rewards_probabilities(col):
         {"Rewards": reward_grades, "Probabilities": reward_probabilities}
     )
     rewards_table.set_index("Rewards", inplace=True)
+    rewards_table["Probabilities"] = rewards_table["Probabilities"] * 100
 
     with col:
         st.markdown(
@@ -45,7 +46,7 @@ def show_rewards_probabilities(col):
             column_config={
                 "Rewards": st.column_config.TextColumn(disabled=True),
                 "Probabilities": st.column_config.NumberColumn(
-                    format="%.4f", disabled=True
+                    format="%.2f %%", disabled=True
                 ),
             },
         )
