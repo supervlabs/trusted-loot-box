@@ -4,14 +4,6 @@
 
 This is a dashboard that provides a visual representation of Loot Box data. It is designed to make reward data sets understandable. Users can see the dashboard to understand what happened in the past and what is happening now.
 
-## Features
-
-- Feature 1: (Describe the feature here)
-- Feature 2: (Describe the feature here)
-- ...
-
-✅ TODO: Update the features of the dashboard.
-
 ## Installation
 
 This dashboard is built using [Streamlit](https://streamlit.io/).
@@ -35,7 +27,26 @@ Run the dashboard using the following command:
 streamlit run app.py
 ```
 
+## Deployment
 
-## Distributed Dashboard
+There are three versions of the dashboard available:
+
+### Random Hack
+
+[randomhack](https://github.com/supervlabs/trusted-loot-box/tree/randomhack) branch is the live branch for aptos random hackathon. It is deployed on render.com. You can access it [here](https://trusted-loot-box.onrender.com/).
+
+### Sidekick Draw - Dev
+
+[deploy-dev](https://github.com/supervlabs/trusted-loot-box/tree/deploy-dev) branch is the development branch for Sidekick Draw. It is deployed on render.com. You can access it [here](https://sidekickdraw-dev.onrender.com/).
+
+Dev version of Sidekick Draw event is available [here](https://devci.web.vir.supervlabs.net/sidekick-draw-event)
+
+
+### Sidekick Draw - Prod
+[deploy-live](https://github.com/supervlabs/trusted-loot-box/tree/deploy-live) branch is the production branch for Sidekick Draw. It is deployed on render.com. You can access it [here](https://sidekickdraw.onrender.com/).
+
+Sidekick Draw events are available [here](https://supervlabs.io/sidekick-draw-event)
+
+## Distributed Dashboard for Aptos random hack
 
 The dashboard is also available online. You can access it [here](https://trusted-loot-box.onrender.com/).

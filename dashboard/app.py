@@ -1,4 +1,6 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+import pytz
+import time
 
 import pandas as pd
 import plotly.express as px
@@ -59,45 +61,46 @@ def get_next(since: str | None = None) -> str:
     return since.rsplit("Z", 1)[0][:-1] + "@"
 
 
-def get_rewards() -> pd.DataFrame:
-    if "last_updated" not in st.session_state:
-        st.session_state.last_updated = get_next(None)
-    if "df" not in st.session_state:
-        st.session_state.df = pd.DataFrame()
-    while True:
-        since = st.session_state.last_updated
-        new_df = get_rewards_data(since)
-        if (new_df is None) or new_df.empty:
-            break
-        _df = pd.concat([st.session_state.df, new_df], ignore_index=True)
-        _df.drop_duplicates(subset="txn_hash", keep="last", inplace=True)
-        _df.reset_index(drop=True, inplace=True)
-        if len(_df) > rewards_fetch_limit:
-            _df = _df.iloc[-rewards_fetch_limit:, :]
-        st.session_state.df = _df
-        latest_datetime = _df["skey"].max()
-        st.session_state.last_updated = get_next(latest_datetime)
-    return st.session_state.df
-
-
-def get_next_reward_counts(since: str | None = None) -> str:
-    if since is None:
-        return "2024-03-15T00:00:00Z"
-    return since.rsplit("Z", 1)[0][:-1] + "@"
+# def get_rewards() -> pd.DataFrame:
+#     if "last_updated" not in st.session_state:
+#         st.session_state.last_updated = get_next(None)
+#     if "df" not in st.session_state:
+#         st.session_state.df = pd.DataFrame()
+#     while True:
+#         since = st.session_state.last_updated
+#         new_df = get_rewards_data(since)
+#         if (new_df is None) or new_df.empty:
+#             break
+#         _df = pd.concat([st.session_state.df, new_df], ignore_index=True)
+#         _df.drop_duplicates(subset="txn_hash", keep="last", inplace=True)
+#         _df.reset_index(drop=True, inplace=True)
+#         if len(_df) > rewards_fetch_limit:
+#             _df = _df.iloc[-rewards_fetch_limit:, :]
+#         st.session_state.df = _df
+#         latest_datetime = _df["skey"].max()
+#         st.session_state.last_updated = get_next(latest_datetime)
+#     return st.session_state.df
 
 
 def get_all_reward_counts() -> dict[str, int]:
-    if "last_updated_time" not in st.session_state:
-        st.session_state.last_updated_time = get_next_reward_counts(None)
+    if "next_since" not in st.session_state:
+        st.session_state.next_since = datetime(2024, 3, 15, 0, 0, 0, 0, timezone.utc)
     if "reward_counts" not in st.session_state:
         rewards = ["Total Trials"] + list(GRADES)
         st.session_state.reward_counts = dict.fromkeys(rewards, 0)
     while True:
-        since = st.session_state.last_updated_time
-        reward_counts, latest_update = get_reward_counts(since)
-        st.session_state.last_updated_time = get_next_reward_counts(latest_update)
-        if reward_counts is None:
+        next_since = st.session_state.next_since
+        now = datetime.now(timezone.utc)
+        if now.timestamp() < (next_since + timedelta(minutes=1)).timestamp():
+            # query after 1 minute
             break
+        reward_counts, next_since = get_reward_counts(next_since)
+        st.session_state.next_since = next_since
+        if reward_counts is None:
+            if now.timestamp() >= (next_since + timedelta(minutes=1)).timestamp():
+                continue
+            else:
+                break
         for k, v in reward_counts.items():
             st.session_state.reward_counts[k] += v
     return st.session_state.reward_counts
@@ -108,7 +111,7 @@ st.title("Trusted Loot Box - Dashboard")
 reward_counts = get_all_reward_counts()
 names = ["Total Trials"] + list(GRADES)
 values = [reward_counts[name] for name in names]
-df = get_rewards()
+# df = get_rewards()
 
 with st.container():
     left, right = st.columns(2)
@@ -141,86 +144,86 @@ with left:
     st.plotly_chart(fig)
 
 
-with right:
-    # Show Time Series for All Rewards
-    fig = px.line(
-        df.set_index("created_at").iloc[:, 6:].cumsum(),
-        title="Rewards Time Series",
-        color_discrete_sequence=colors,
-    ).update_layout(
-        xaxis_title="Date",
-        yaxis_title="Cumulative Count",
-        legend_title="Rewards",
-    )
-    st.plotly_chart(fig)
+# with right:
+#     # Show Time Series for All Rewards
+#     fig = px.line(
+#         df.set_index("created_at").iloc[:, 6:].cumsum(),
+#         title="Rewards Time Series",
+#         color_discrete_sequence=colors,
+#     ).update_layout(
+#         xaxis_title="Date",
+#         yaxis_title="Cumulative Count",
+#         legend_title="Rewards",
+#     )
+#     st.plotly_chart(fig)
 
-with right:
-    # Show Time Series for the Rarest Reward and confidence interval
-    fig = px.line(
-        df.set_index("created_at").iloc[:, 6:].cumsum(),
-        y="Legendary",
-        title="Legendary Time Series",
-        color_discrete_sequence=colors[-1:],
-    ).update_layout(xaxis_title="Date", yaxis_title="Cumulative Count")
-    st.plotly_chart(fig)
+# with right:
+#     # Show Time Series for the Rarest Reward and confidence interval
+#     fig = px.line(
+#         df.set_index("created_at").iloc[:, 6:].cumsum(),
+#         y="Legendary",
+#         title="Legendary Time Series",
+#         color_discrete_sequence=colors[-1:],
+#     ).update_layout(xaxis_title="Date", yaxis_title="Cumulative Count")
+#     st.plotly_chart(fig)
 
-with left:
-    # Show Heatmap for Rewards vs. Trials
-    df_heatmap = df.iloc[:, 7:].T
-    df_heatmap = df_heatmap.reindex(
-        index=df_heatmap.index[::-1]
-    )  # Reverse the order of rows
+# with left:
+#     # Show Heatmap for Rewards vs. Trials
+#     df_heatmap = df.iloc[:, 7:].T
+#     df_heatmap = df_heatmap.reindex(
+#         index=df_heatmap.index[::-1]
+#     )  # Reverse the order of rows
 
-    fig = px.imshow(
-        df_heatmap,
-        x=df.index + 1,
-        title="Rewards at Each Trial",
-        labels={"x": "# Trials", "y": "Rewards"},
-        color_continuous_scale=["white", "blue"],
-    ).update_layout(coloraxis_showscale=False)
-    st.plotly_chart(fig)
-
-
-# Show the trial table
-df_for_table = df.copy().iloc[-100:, :7]
-df_for_table.set_index("total_minted", inplace=True)
-df_for_table.index.name = "# Trials"
+#     fig = px.imshow(
+#         df_heatmap,
+#         x=df.index + 1,
+#         title="Rewards at Each Trial",
+#         labels={"x": "# Trials", "y": "Rewards"},
+#         color_continuous_scale=["white", "blue"],
+#     ).update_layout(coloraxis_showscale=False)
+#     st.plotly_chart(fig)
 
 
-def make_reward_link(token_data_id):
-    url = f"https://explorer.aptoslabs.com/token/{token_data_id}/0?network=randomnet"
-    return url
+# # Show the trial table
+# df_for_table = df.copy().iloc[-100:, :7]
+# df_for_table.set_index("total_minted", inplace=True)
+# df_for_table.index.name = "# Trials"
 
 
-def make_dice_link(txn_hash):
-    url = f"https://explorer.aptoslabs.com/txn/{txn_hash}/userTxnOverview?network=randomnet"
-    return url
+# def make_reward_link(token_data_id):
+#     url = f"https://explorer.aptoslabs.com/token/{token_data_id}/0?network=randomnet"
+#     return url
 
 
-df_for_table["link_to_reward"] = df_for_table["token_data_id"].apply(make_reward_link)
-df_for_table["link"] = df_for_table["txn_hash"].apply(make_dice_link)
+# def make_dice_link(txn_hash):
+#     url = f"https://explorer.aptoslabs.com/txn/{txn_hash}/userTxnOverview?network=randomnet"
+#     return url
 
-df_for_table.drop(columns=["token_data_id", "txn_hash", "skey"], inplace=True)
 
-st.markdown("**Trials Table:** The list of Rewards for each trial")
-st.data_editor(
-    df_for_table[::-1],
-    column_config={
-        "created_at": st.column_config.DatetimeColumn(
-            "DateTime (UTC)", format="YYYY-MM-DD HH:mm:ss.SSS"
-        ),
-        "grade": st.column_config.TextColumn("Grade"),
-        "item_name": st.column_config.TextColumn("Item Name", width=150),
-        "link_to_reward": st.column_config.LinkColumn(
-            "Reward Link", display_text="🔗 Link to Aptos Explorer"
-        ),
-        "txn_hash": st.column_config.TextColumn("Txn Hash"),
-        "link": st.column_config.LinkColumn(
-            "Dice Link",
-            display_text="🔗 Link to Aptos Explorer",
-        ),
-    },
-    disabled=True,
-)
+# df_for_table["link_to_reward"] = df_for_table["token_data_id"].apply(make_reward_link)
+# df_for_table["link"] = df_for_table["txn_hash"].apply(make_dice_link)
+
+# df_for_table.drop(columns=["token_data_id", "txn_hash", "skey"], inplace=True)
+
+# st.markdown("**Trials Table:** The list of Rewards for each trial")
+# st.data_editor(
+#     df_for_table[::-1],
+#     column_config={
+#         "created_at": st.column_config.DatetimeColumn(
+#             "DateTime (UTC)", format="YYYY-MM-DD HH:mm:ss.SSS"
+#         ),
+#         "grade": st.column_config.TextColumn("Grade"),
+#         "item_name": st.column_config.TextColumn("Item Name", width=150),
+#         "link_to_reward": st.column_config.LinkColumn(
+#             "Reward Link", display_text="🔗 Link to Aptos Explorer"
+#         ),
+#         "txn_hash": st.column_config.TextColumn("Txn Hash"),
+#         "link": st.column_config.LinkColumn(
+#             "Dice Link",
+#             display_text="🔗 Link to Aptos Explorer",
+#         ),
+#     },
+#     disabled=True,
+# )
 
 st_autorefresh(interval=15 * 1000, limit=10, key="trusted_loot_box")
