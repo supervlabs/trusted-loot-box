@@ -1,5 +1,6 @@
 import os
-from datetime import datetime
+from datetime import datetime, timezone
+from pytz import utc
 from urllib.parse import urlencode, urlunparse
 
 import pandas as pd
@@ -28,7 +29,6 @@ def get_rewards_data_for_test(
 
     return df
 
-
 @st.cache_resource(ttl=60 * 60 * 24)
 def get_rewards_data(since: str | None = None) -> pd.DataFrame:
     print("Fetching get_rewards_data", since)
@@ -38,12 +38,15 @@ def get_rewards_data(since: str | None = None) -> pd.DataFrame:
 
 
 @st.cache_resource()
-def get_reward_counts(since: str | None = None) -> tuple[dict[str, int] | None, str]:
-    print("Fetching get_reward_counts", since)
-    json_data = get_json_from_api(since_date=since)
+def get_reward_counts(since: datetime | None = None) -> tuple[dict[str, int] | None, datetime]:
+    since_str = since.isoformat(timespec='milliseconds')[:22] + "@"
+    print(since.isoformat(timespec='milliseconds'), "Fetching get_reward_counts")
+    d = datetime.now(timezone.utc)
+    json_data = get_json_from_api(since_date=since_str)
     df = get_dataframe(json_data) if json_data else pd.DataFrame()
     if len(df) == 0:
-        return None, datetime.now().isoformat()
+        print('>> next_since', d.isoformat(timespec='milliseconds'), "no data")
+        return None, d
     latest_update = df["skey"].max()
     rewards = ["Total Trials"] + list(GRADES)
     reward_counts = dict.fromkeys(rewards, 0)
@@ -54,7 +57,10 @@ def get_reward_counts(since: str | None = None) -> tuple[dict[str, int] | None, 
     values = [n_trial] + df_count.tolist()
     for i, name in enumerate(names):
         reward_counts[name] = values[i]
-    return reward_counts, latest_update
+    d = datetime.fromisoformat(latest_update[:23])
+    d = d.replace(tzinfo=utc)
+    print('>> next_since', d.isoformat(timespec='milliseconds'), "num=", values[0])
+    return reward_counts, d
 
 
 def convert_json_to_df(json_dicts: list[dict]) -> pd.DataFrame:
