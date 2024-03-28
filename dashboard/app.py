@@ -62,7 +62,7 @@ with st.container():
         n_reward_grades = len(df_count)
         names = df_count.index.tolist()
         names = ["Total Trials"] + [n.capitalize() for n in names]
-        values = [n_trial] + df_count["Count"].tolist()
+        values: list = [n_trial] + df_count["Count"].tolist()
 
         n_metrics = n_reward_grades + 1
         st.markdown("**Metrics:** How many rewards have been distributed by grades?")
@@ -155,49 +155,68 @@ with left:
 
 
 # Show the trial table
-limit = 100
-df_minting_logs = get_minting_logs(limit)
-df_minting_logs.set_index("total_minted", inplace=True)
-df_minting_logs.index.name = "# Trials"
 
+with left:
+    st.markdown("#### **Trials Table:** The list of Rewards for each trial")
+    menu = st.columns((3, 1, 1))
+    with menu[2]:
+        batch_size = st.selectbox("Page Size", options=[25, 50, 100], index=1)
+    with menu[1]:
+        if batch_size is None:
+            batch_size = 100
+        total_pages = (
+            int(n_trial_int / batch_size) + 1
+            if int(n_trial_int / batch_size) > 0
+            else 1
+        )
+        current_page = st.number_input(
+            "Page", min_value=1, max_value=total_pages, step=1
+        )
+    with menu[0]:
+        st.markdown(f"Page **{current_page}** of **{total_pages}**")
 
-def make_reward_link(token_data_id):
-    url = f"https://explorer.aptoslabs.com/token/{token_data_id}/0?network=randomnet"
-    return url
+    limit_table = batch_size
+    offset = int((current_page - 1) * batch_size)
+    df_minting_logs = get_minting_logs(limit_table, offset)
+    df_minting_logs.set_index("total_minted", inplace=True)
+    df_minting_logs.index.name = "# Trials"
 
+    def make_reward_link(token_data_id):
+        url = (
+            f"https://explorer.aptoslabs.com/token/{token_data_id}/0?network=randomnet"
+        )
+        return url
 
-def make_dice_link(txn_hash):
-    url = f"https://explorer.aptoslabs.com/txn/{txn_hash}/userTxnOverview?network=randomnet"
-    return url
+    def make_dice_link(txn_hash):
+        url = f"https://explorer.aptoslabs.com/txn/{txn_hash}/userTxnOverview?network=randomnet"
+        return url
 
+    df_minting_logs["link_to_reward"] = df_minting_logs["token_data_id"].apply(
+        make_reward_link
+    )
+    df_minting_logs["link_to_dice"] = df_minting_logs["txn_hash"].apply(make_dice_link)
 
-df_minting_logs["link_to_reward"] = df_minting_logs["token_data_id"].apply(
-    make_reward_link
-)
-df_minting_logs["link_to_dice"] = df_minting_logs["txn_hash"].apply(make_dice_link)
+    df_minting_logs["item_name"] = df_minting_logs["token_name"]
+    df_minting_logs = df_minting_logs[
+        ["created_at", "grade", "item_name", "link_to_reward", "link_to_dice"]
+    ]
+    st.data_editor(
+        df_minting_logs,
+        column_config={
+            "created_at": st.column_config.DatetimeColumn(
+                "DateTime (UTC)", format="YYYY-MM-DD HH:mm:ss.SSS"
+            ),
+            "grade": st.column_config.TextColumn("Grade"),
+            "item_name": st.column_config.TextColumn("Item Name", width=150),
+            "link_to_reward": st.column_config.LinkColumn(
+                "Reward Link", display_text="🔗 Link to Aptos Explorer"
+            ),
+            "link_to_dice": st.column_config.LinkColumn(
+                "Dice Link",
+                display_text="🔗 Link to Aptos Explorer",
+            ),
+        },
+        disabled=True,
+    )
 
-df_minting_logs["item_name"] = df_minting_logs["token_name"]
-df_minting_logs = df_minting_logs[
-    ["created_at", "grade", "item_name", "link_to_reward", "link_to_dice"]
-]
-st.markdown("**Trials Table:** The list of Rewards for each trial")
-st.data_editor(
-    df_minting_logs,
-    column_config={
-        "created_at": st.column_config.DatetimeColumn(
-            "DateTime (UTC)", format="YYYY-MM-DD HH:mm:ss.SSS"
-        ),
-        "grade": st.column_config.TextColumn("Grade"),
-        "item_name": st.column_config.TextColumn("Item Name", width=150),
-        "link_to_reward": st.column_config.LinkColumn(
-            "Reward Link", display_text="🔗 Link to Aptos Explorer"
-        ),
-        "link_to_dice": st.column_config.LinkColumn(
-            "Dice Link",
-            display_text="🔗 Link to Aptos Explorer",
-        ),
-    },
-    disabled=True,
-)
-
-st_autorefresh(interval=15 * 1000, limit=10, key="trusted_loot_box")
+    st_autorefresh(interval=15 * 1000, limit=10, key="trusted_loot_box")
