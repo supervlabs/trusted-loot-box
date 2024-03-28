@@ -108,7 +108,7 @@ with right:
     df_onehot_cumsum = get_onehot_cumsum(limit_time_series)
     df_onehot_cumsum.columns = df_onehot_cumsum.columns.str.capitalize()
     fig = px.line(
-        df_onehot_cumsum.set_index("Created_at")[
+        df_onehot_cumsum.set_index("Skey")[
             ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
         ],
         title="Rewards Time Series",
@@ -123,7 +123,7 @@ with right:
 with right:
     # Show Time Series for the Rarest Reward and confidence interval
     fig = px.line(
-        df_onehot_cumsum.set_index("Created_at")["Legendary"],
+        df_onehot_cumsum.set_index("Skey")["Legendary"],
         y="Legendary",
         title="Legendary Time Series",
         color_discrete_sequence=colors[-1:],
@@ -199,12 +199,12 @@ with left:
 
     df_minting_logs["item_name"] = df_minting_logs["token_name"]
     df_minting_logs = df_minting_logs[
-        ["created_at", "grade", "item_name", "link_to_reward", "link_to_dice"]
+        ["skey", "grade", "item_name", "link_to_reward", "link_to_dice"]
     ]
     st.data_editor(
         df_minting_logs,
         column_config={
-            "created_at": st.column_config.DatetimeColumn(
+            "skey": st.column_config.DatetimeColumn(
                 "DateTime (UTC)", format="YYYY-MM-DD HH:mm:ss.SSS"
             ),
             "grade": st.column_config.TextColumn("Grade"),
