@@ -17,7 +17,7 @@ if not API_URL:
 TTL = int(os.getenv("TTL", 15))
 
 
-@st.cache_data(ttl=TTL)
+@st.cache_data(ttl=TTL, show_spinner=False)
 def get_count() -> pd.DataFrame:
     counts = requests.get(API_URL + "/count").json()
     counts = {k: counts[k] for k in GRADES}
@@ -25,7 +25,7 @@ def get_count() -> pd.DataFrame:
     return result
 
 
-@st.cache_data(ttl=TTL)
+@st.cache_data(ttl=TTL, show_spinner=False)
 def get_onehot_cumsum(limit: int = 1000) -> pd.DataFrame:
     logs = requests.get(
         API_URL + "/onehot", params={"limit": limit, "cumsum": True}
@@ -35,7 +35,7 @@ def get_onehot_cumsum(limit: int = 1000) -> pd.DataFrame:
     return df
 
 
-@st.cache_data(ttl=TTL)
+@st.cache_data(ttl=TTL, show_spinner=False)
 def get_onehot(limit: int = 1000) -> pd.DataFrame:
     logs = requests.get(API_URL + "/onehot", params={"limit": limit}).json()
     df = pd.DataFrame(logs)
@@ -43,7 +43,7 @@ def get_onehot(limit: int = 1000) -> pd.DataFrame:
     return df
 
 
-@st.cache_data(ttl=TTL)
+@st.cache_data(ttl=TTL, show_spinner=False)
 def get_minting_logs(limit: int = 1000, offset: int = 0) -> pd.DataFrame:
     logs = requests.get(
         API_URL + "/items", params={"limit": limit, "offset": offset}
