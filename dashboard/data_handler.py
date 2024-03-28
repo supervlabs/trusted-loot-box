@@ -6,7 +6,7 @@ import streamlit as st
 from dotenv import load_dotenv
 
 GRADES = ("Common", "Uncommon", "Rare", "Epic", "Legendary")
-PROBABILITIES = (1 - (0.3 + 0.05 + 0.008 + 0.0001), 0.3, 0.05, 0.008, 0.0001)
+PROBABILITIES = (1 - (0.3 + 0.05 + 0.008 + 0.001), 0.3, 0.05, 0.008, 0.001)
 assert len(GRADES) == len(PROBABILITIES)
 assert sum(PROBABILITIES) == 1
 
