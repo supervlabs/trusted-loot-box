@@ -1,7 +1,14 @@
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-from data_handler import GRADES, PROBABILITIES, get_rewards_data
+from data_handler import (
+    GRADES,
+    PROBABILITIES,
+    get_count,
+    get_minting_logs,
+    get_onehot,
+    get_onehot_cumsum,
+)
 from streamlit_autorefresh import st_autorefresh
 
 st.set_page_config(
@@ -70,18 +77,18 @@ def get_rewards() -> pd.DataFrame:
 
 st.title("Trusted Loot Box - Dashboard")
 
-df = get_rewards()
+# df = get_rewards()
 
 with st.container():
     left, right = st.columns(2)
     with left:
         # Show Metrics
-        df_count = df.iloc[:, 6:].sum()
+        df_count = get_count()
         n_trial = df_count.sum()
         n_reward_grades = len(df_count)
         names = df_count.index.tolist()
         names = ["Total Trials"] + [n.capitalize() for n in names]
-        values = [n_trial] + df_count.tolist()
+        values = [n_trial] + df_count["Count"].tolist()
 
         n_metrics = n_reward_grades + 1
         st.markdown("**Metrics:** How many rewards have been distributed by grades?")
@@ -112,8 +119,15 @@ with left:
 
 with right:
     # Show Time Series for All Rewards
+    # TODO: Slider for the limit
+    limit = -1
+
+    df_onehot_cumsum = get_onehot_cumsum(limit)
+    df_onehot_cumsum.columns = df_onehot_cumsum.columns.str.capitalize()
     fig = px.line(
-        df.set_index("created_at").iloc[:, 5:].cumsum(),
+        df_onehot_cumsum.set_index("Created_at")[
+            ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+        ],
         title="Rewards Time Series",
         color_discrete_sequence=colors,
     ).update_layout(
@@ -126,7 +140,7 @@ with right:
 with right:
     # Show Time Series for the Rarest Reward and confidence interval
     fig = px.line(
-        df.set_index("created_at").iloc[:, 4:].cumsum(),
+        df_onehot_cumsum.set_index("Created_at")["Legendary"],
         y="Legendary",
         title="Legendary Time Series",
         color_discrete_sequence=colors[-1:],
@@ -135,14 +149,14 @@ with right:
 
 with left:
     # Show Heatmap for Rewards vs. Trials
-    df_heatmap = df.iloc[:, 6:].T
-    df_heatmap = df_heatmap.reindex(
-        index=df_heatmap.index[::-1]
-    )  # Reverse the order of rows
+    limit = 1000
+    df_heatmap = get_onehot(limit)
+    df_heatmap.set_index("total_minted", inplace=True)
+    df_heatmap.columns = df_heatmap.columns.str.capitalize()
+    df_heatmap = df_heatmap[["Common", "Uncommon", "Rare", "Epic", "Legendary"]]
 
     fig = px.imshow(
-        df_heatmap,
-        x=df.index + 1,
+        df_heatmap.T[::-1],
         title="Rewards at Each Trial",
         labels={"x": "# Trials", "y": "Rewards"},
         color_continuous_scale=["white", "blue"],
@@ -151,9 +165,10 @@ with left:
 
 
 # Show the trial table
-df_for_table = df.copy().iloc[-100:, :6]
-df_for_table.index = df_for_table.index + 1
-df_for_table.index.name = "# Trials"
+limit = 100
+df_minting_logs = get_minting_logs(limit)
+df_minting_logs.set_index("total_minted", inplace=True)
+df_minting_logs.index.name = "# Trials"
 
 
 def make_reward_link(token_data_id):
@@ -166,14 +181,18 @@ def make_dice_link(txn_hash):
     return url
 
 
-df_for_table["link_to_reward"] = df_for_table["token_data_id"].apply(make_reward_link)
-df_for_table["link"] = df_for_table["txn_hash"].apply(make_dice_link)
+df_minting_logs["link_to_reward"] = df_minting_logs["token_data_id"].apply(
+    make_reward_link
+)
+df_minting_logs["link_to_dice"] = df_minting_logs["txn_hash"].apply(make_dice_link)
 
-df_for_table.drop(columns=["token_data_id", "txn_hash", "skey"], inplace=True)
-
+df_minting_logs["item_name"] = df_minting_logs["token_name"]
+df_minting_logs = df_minting_logs[
+    ["created_at", "grade", "item_name", "link_to_reward", "link_to_dice"]
+]
 st.markdown("**Trials Table:** The list of Rewards for each trial")
 st.data_editor(
-    df_for_table[::-1],
+    df_minting_logs,
     column_config={
         "created_at": st.column_config.DatetimeColumn(
             "DateTime (UTC)", format="YYYY-MM-DD HH:mm:ss.SSS"
@@ -183,8 +202,7 @@ st.data_editor(
         "link_to_reward": st.column_config.LinkColumn(
             "Reward Link", display_text="🔗 Link to Aptos Explorer"
         ),
-        "txn_hash": st.column_config.TextColumn("Txn Hash"),
-        "link": st.column_config.LinkColumn(
+        "link_to_dice": st.column_config.LinkColumn(
             "Dice Link",
             display_text="🔗 Link to Aptos Explorer",
         ),
