@@ -13,7 +13,7 @@ from data_handler import (
 from streamlit_autorefresh import st_autorefresh  # type: ignore
 
 st.set_page_config(
-    page_title="Trusted Loot Box",
+    page_title="Sidekick Draw",
     page_icon="🎲",
     layout="wide",
     initial_sidebar_state="auto",
