@@ -157,7 +157,7 @@ with left:
 # Show the trial table
 
 with left:
-    st.markdown("#### **Trials Table:**List of recent Rewards for each trial")
+    st.markdown("#### Trials Table: List of recent Rewards for each trial")
     menu = st.columns((3, 1, 1))
     with menu[2]:
         batch_size = st.selectbox("Page Size", options=[25, 50, 100], index=1)
