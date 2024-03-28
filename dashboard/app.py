@@ -20,7 +20,7 @@ st.set_page_config(
     menu_items={
         "Get Help": "mailto:cs@supervlabs.io",
         "Report a bug": "mailto:cs@supervlabs.io",
-        "About": "This is a dashboard for Trusted Loot Box by [Supervillain Labs](https://supervlabs.io/)",
+        "About": "This is a dashboard for Sidekick Draw by [Supervillain Labs](https://supervlabs.io/)",
     },
 )
 
@@ -46,13 +46,13 @@ def show_rewards_probabilities(col):
             column_config={
                 "Rewards": st.column_config.TextColumn(disabled=True),
                 "Probabilities": st.column_config.NumberColumn(
-                    format="%.2f %%", disabled=True
+                    format="%.1f %%", disabled=True
                 ),
             },
         )
 
 
-st.title("Trusted Loot Box - Dashboard")
+st.title("Sidekick Draw - Dashboard")
 
 with st.container():
     left, right = st.columns(2)
