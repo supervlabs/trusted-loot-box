@@ -1,15 +1,16 @@
 import pandas as pd
-import plotly.express as px
+import plotly.express as px  # type: ignore
 import streamlit as st
 from data_handler import (
     GRADES,
     PROBABILITIES,
+    TTL,
     get_count,
     get_minting_logs,
     get_onehot,
     get_onehot_cumsum,
 )
-from streamlit_autorefresh import st_autorefresh
+from streamlit_autorefresh import st_autorefresh  # type: ignore
 
 st.set_page_config(
     page_title="Trusted Loot Box",
@@ -207,7 +208,7 @@ with left:
                 "DateTime (UTC)", format="YYYY-MM-DD HH:mm:ss.SSS"
             ),
             "grade": st.column_config.TextColumn("Grade"),
-            "item_name": st.column_config.TextColumn("Item Name", width=150),
+            "item_name": st.column_config.TextColumn("Item Name", width=150),  # type: ignore
             "link_to_reward": st.column_config.LinkColumn(
                 "Reward Link", display_text="🔗 Link to Aptos Explorer"
             ),
@@ -219,4 +220,7 @@ with left:
         disabled=True,
     )
 
-    st_autorefresh(interval=15 * 1000, limit=10, key="trusted_loot_box")
+refresh_interval_seconds = TTL
+st_autorefresh(
+    interval=refresh_interval_seconds * 1000, limit=20, key="trusted_loot_box"
+)
