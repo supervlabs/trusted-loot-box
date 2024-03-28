@@ -51,34 +51,7 @@ def show_rewards_probabilities(col):
         )
 
 
-def get_next(since: str | None = None) -> str:
-    if since is None:
-        return "2024-03-15T00:00:00Z"
-    return since.rsplit("Z", 1)[0][:-1] + "@"
-
-
-def get_rewards() -> pd.DataFrame:
-    if "last_updated" not in st.session_state:
-        st.session_state.last_updated = get_next(None)
-    if "df" not in st.session_state:
-        st.session_state.df = pd.DataFrame()
-    while True:
-        since = st.session_state.last_updated
-        new_df = get_rewards_data(since)
-        if (new_df is None) or new_df.empty:
-            break
-        _df = pd.concat([st.session_state.df, new_df], ignore_index=True)
-        _df.drop_duplicates(subset="txn_hash", keep="last", inplace=True)
-        _df.reset_index(drop=True, inplace=True)
-        st.session_state.df = _df
-        latest_datetime = _df["skey"].max()
-        st.session_state.last_updated = get_next(latest_datetime)
-    return st.session_state.df
-
-
 st.title("Trusted Loot Box - Dashboard")
-
-# df = get_rewards()
 
 with st.container():
     left, right = st.columns(2)
@@ -120,10 +93,18 @@ with left:
 
 with right:
     # Show Time Series for All Rewards
-    # TODO: Slider for the limit
-    limit = -1
+    st.markdown("#### Rewards Time Series")
+    n_trial_int = int(n_trial.iloc[0])
+    limit_time_series = st.slider(
+        "How many recent trials to show in Time Series?",
+        min_value=100,
+        max_value=n_trial_int,
+        value=n_trial_int // 200 * 100 if n_trial_int >= 1000 else n_trial_int,
+        step=100,
+        key="limit_time_series",
+    )
 
-    df_onehot_cumsum = get_onehot_cumsum(limit)
+    df_onehot_cumsum = get_onehot_cumsum(limit_time_series)
     df_onehot_cumsum.columns = df_onehot_cumsum.columns.str.capitalize()
     fig = px.line(
         df_onehot_cumsum.set_index("Created_at")[
@@ -150,8 +131,16 @@ with right:
 
 with left:
     # Show Heatmap for Rewards vs. Trials
-    limit = 1000
-    df_heatmap = get_onehot(limit)
+    st.markdown("#### Rewards Heatmap")
+    limit_heatmap = st.slider(
+        "How many recent trials to show in Rewards Heatmap?",
+        min_value=100,
+        max_value=n_trial_int,
+        value=n_trial_int // 200 * 100 if n_trial_int >= 1000 else n_trial_int,
+        step=100,
+        key="limit_heatmap",
+    )
+    df_heatmap = get_onehot(limit_heatmap)
     df_heatmap.set_index("total_minted", inplace=True)
     df_heatmap.columns = df_heatmap.columns.str.capitalize()
     df_heatmap = df_heatmap[["Common", "Uncommon", "Rare", "Epic", "Legendary"]]
