@@ -183,13 +183,11 @@ with left:
     df_minting_logs.index.name = "# Trials"
 
     def make_reward_link(token_data_id):
-        url = (
-            f"https://explorer.aptoslabs.com/token/{token_data_id}/0?network=randomnet"
-        )
+        url = f"https://explorer.aptoslabs.com/token/{token_data_id}/0?network=mainnet"
         return url
 
     def make_dice_link(txn_hash):
-        url = f"https://explorer.aptoslabs.com/txn/{txn_hash}/userTxnOverview?network=randomnet"
+        url = f"https://explorer.aptoslabs.com/txn/{txn_hash}/userTxnOverview?network=mainnet"
         return url
 
     df_minting_logs["link_to_reward"] = df_minting_logs["token_data_id"].apply(
