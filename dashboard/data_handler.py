@@ -43,8 +43,10 @@ def get_onehot(limit: int = 1000) -> pd.DataFrame:
 
 
 @st.cache_data(ttl=60)
-def get_minting_logs(limit: int = 1000) -> pd.DataFrame:
-    logs = requests.get(API_URL + "/items", params={"limit": limit}).json()
+def get_minting_logs(limit: int = 1000, offset: int = 0) -> pd.DataFrame:
+    logs = requests.get(
+        API_URL + "/items", params={"limit": limit, "offset": offset}
+    ).json()
     df = pd.DataFrame(logs)
     df["created_at"] = pd.to_datetime(df["created_at"], format="ISO8601")
     return df
