@@ -220,6 +220,8 @@ with left:
         disabled=True,
     )
 
+
+# Auto refresh the page
 refresh_interval_seconds = TTL
 refresh_maintaining_minutes = 30
 refresh_limit = int(refresh_maintaining_minutes * 60 / refresh_interval_seconds)
