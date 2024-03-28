@@ -221,6 +221,10 @@ with left:
     )
 
 refresh_interval_seconds = TTL
+refresh_maintaining_minutes = 30
+refresh_limit = int(refresh_maintaining_minutes * 60 / refresh_interval_seconds)
 st_autorefresh(
-    interval=refresh_interval_seconds * 1000, limit=20, key="trusted_loot_box"
+    interval=refresh_interval_seconds * 1000,
+    limit=refresh_limit,
+    key="trusted_loot_box",
 )
