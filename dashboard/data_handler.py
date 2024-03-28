@@ -31,7 +31,7 @@ def get_onehot_cumsum(limit: int = 1000) -> pd.DataFrame:
         API_URL + "/onehot", params={"limit": limit, "cumsum": True}
     ).json()
     df = pd.DataFrame(logs)
-    df["created_at"] = pd.to_datetime(df["created_at"], format="ISO8601")
+    df["skey"] = pd.to_datetime(df["skey"], format="ISO8601")
     return df
 
 
@@ -39,7 +39,7 @@ def get_onehot_cumsum(limit: int = 1000) -> pd.DataFrame:
 def get_onehot(limit: int = 1000) -> pd.DataFrame:
     logs = requests.get(API_URL + "/onehot", params={"limit": limit}).json()
     df = pd.DataFrame(logs)
-    df["created_at"] = pd.to_datetime(df["created_at"], format="ISO8601")
+    df["skey"] = pd.to_datetime(df["skey"], format="ISO8601")
     return df
 
 
@@ -50,4 +50,5 @@ def get_minting_logs(limit: int = 1000, offset: int = 0) -> pd.DataFrame:
     ).json()
     df = pd.DataFrame(logs)
     df["created_at"] = pd.to_datetime(df["created_at"], format="ISO8601")
+    df["skey"] = pd.to_datetime(df["skey"], format="ISO8601")
     return df
