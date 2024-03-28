@@ -100,7 +100,7 @@ with right:
         "How many recent trials to show in Time Series?",
         min_value=100,
         max_value=n_trial_int,
-        value=n_trial_int // 200 * 100 if n_trial_int >= 1000 else n_trial_int,
+        value=n_trial_int,
         step=100,
         key="limit_time_series",
     )
