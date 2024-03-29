@@ -176,7 +176,9 @@ with left:
             "Page", min_value=1, max_value=total_pages, step=1
         )
     with menu[0]:
-        st.markdown(f"Page **{current_page}** of **{total_pages}**")
+        st.markdown(
+            f"Page **{current_page}** of **{total_pages}** / **{grade}** Count: {n_grade}"
+        )
 
     limit_table = batch_size
     offset = int((current_page - 1) * batch_size)
