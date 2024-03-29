@@ -59,7 +59,7 @@ with st.container():
     with left:
         # Show Metrics
         df_count = get_count()
-        n_trial = df_count.sum()
+        n_trial = int(df_count.sum().iloc[0])
         n_reward_grades = len(df_count)
         names = df_count.index.tolist()
         names = ["Total Trials"] + [n.capitalize() for n in names]
@@ -95,12 +95,11 @@ with left:
 with right:
     # Show Time Series for All Rewards
     st.markdown("#### Rewards Time Series")
-    n_trial_int = int(n_trial.iloc[0])
     limit_time_series = st.slider(
         "How many recent trials to show in Time Series?",
         min_value=100,
-        max_value=n_trial_int,
-        value=n_trial_int,
+        max_value=n_trial,
+        value=n_trial,
         step=100,
         key="limit_time_series",
     )
@@ -136,8 +135,8 @@ with left:
     limit_heatmap = st.slider(
         "How many recent trials to show in Rewards Heatmap?",
         min_value=100,
-        max_value=n_trial_int,
-        value=n_trial_int // 200 * 100 if n_trial_int >= 1000 else n_trial_int,
+        max_value=n_trial,
+        value=n_trial // 200 * 100 if n_trial >= 1000 else n_trial,
         step=100,
         key="limit_heatmap",
     )
@@ -159,16 +158,19 @@ with left:
 
 with left:
     st.markdown("#### Trials Table: List of recent Rewards for each trial")
-    menu = st.columns((3, 1, 1))
-    with menu[2]:
+    menu = st.columns((2, 1, 1, 1))
+    with menu[3]:
         batch_size = st.selectbox("Page Size", options=[25, 50, 100], index=1)
     with menu[1]:
+        grades_with_all = ["All"] + list(GRADES)
+        if (grade := st.selectbox("Grade", options=grades_with_all, index=0)) is None:
+            grade = "All"
+        n_grade = values[grades_with_all.index(grade)]
+    with menu[2]:
         if batch_size is None:
-            batch_size = 100
+            batch_size = 50
         total_pages = (
-            int(n_trial_int / batch_size) + 1
-            if int(n_trial_int / batch_size) > 0
-            else 1
+            int(n_grade / batch_size) + 1 if int(n_grade / batch_size) > 0 else 1
         )
         current_page = st.number_input(
             "Page", min_value=1, max_value=total_pages, step=1
@@ -178,45 +180,51 @@ with left:
 
     limit_table = batch_size
     offset = int((current_page - 1) * batch_size)
-    df_minting_logs = get_minting_logs(limit_table, offset)
-    df_minting_logs.set_index("total_minted", inplace=True)
-    df_minting_logs.index.name = "# Trials"
+    df_minting_logs = get_minting_logs(limit_table, offset, grade)
 
-    def make_reward_link(token_data_id):
-        url = f"https://explorer.aptoslabs.com/token/{token_data_id}/0?network=mainnet"
-        return url
+    if df_minting_logs.empty:
+        st.warning("No data available for the selected grade.")
+    else:
+        df_minting_logs.set_index("total_minted", inplace=True)
+        df_minting_logs.index.name = "# Trials"
 
-    def make_dice_link(txn_hash):
-        url = f"https://explorer.aptoslabs.com/txn/{txn_hash}/userTxnOverview?network=mainnet"
-        return url
+        def make_reward_link(token_data_id):
+            url = f"https://explorer.aptoslabs.com/token/{token_data_id}/0?network=mainnet"
+            return url
 
-    df_minting_logs["link_to_reward"] = df_minting_logs["token_data_id"].apply(
-        make_reward_link
-    )
-    df_minting_logs["link_to_dice"] = df_minting_logs["txn_hash"].apply(make_dice_link)
+        def make_dice_link(txn_hash):
+            url = f"https://explorer.aptoslabs.com/txn/{txn_hash}/userTxnOverview?network=mainnet"
+            return url
 
-    df_minting_logs["item_name"] = df_minting_logs["token_name"]
-    df_minting_logs = df_minting_logs[
-        ["skey", "grade", "item_name", "link_to_reward", "link_to_dice"]
-    ]
-    st.data_editor(
-        df_minting_logs,
-        column_config={
-            "skey": st.column_config.DatetimeColumn(
-                "DateTime (UTC)", format="YYYY-MM-DD HH:mm:ss.SSS"
-            ),
-            "grade": st.column_config.TextColumn("Grade"),
-            "item_name": st.column_config.TextColumn("Item Name", width=150),  # type: ignore
-            "link_to_reward": st.column_config.LinkColumn(
-                "Reward Link", display_text="🔗 Link to Aptos Explorer"
-            ),
-            "link_to_dice": st.column_config.LinkColumn(
-                "Dice Link",
-                display_text="🔗 Link to Aptos Explorer",
-            ),
-        },
-        disabled=True,
-    )
+        df_minting_logs["link_to_reward"] = df_minting_logs["token_data_id"].apply(
+            make_reward_link
+        )
+        df_minting_logs["link_to_dice"] = df_minting_logs["txn_hash"].apply(
+            make_dice_link
+        )
+
+        df_minting_logs["item_name"] = df_minting_logs["token_name"]
+        df_minting_logs = df_minting_logs[
+            ["skey", "grade", "item_name", "link_to_reward", "link_to_dice"]
+        ]
+        st.data_editor(
+            df_minting_logs,
+            column_config={
+                "skey": st.column_config.DatetimeColumn(
+                    "DateTime (UTC)", format="YYYY-MM-DD HH:mm:ss.SSS"
+                ),
+                "grade": st.column_config.TextColumn("Grade"),
+                "item_name": st.column_config.TextColumn("Item Name", width=150),  # type: ignore
+                "link_to_reward": st.column_config.LinkColumn(
+                    "Reward Link", display_text="🔗 Link to Aptos Explorer"
+                ),
+                "link_to_dice": st.column_config.LinkColumn(
+                    "Dice Link",
+                    display_text="🔗 Link to Aptos Explorer",
+                ),
+            },
+            disabled=True,
+        )
 
 
 # Auto refresh the page
