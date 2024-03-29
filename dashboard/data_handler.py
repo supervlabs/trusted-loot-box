@@ -44,11 +44,15 @@ def get_onehot(limit: int = 1000) -> pd.DataFrame:
 
 
 @st.cache_data(ttl=TTL, show_spinner=False)
-def get_minting_logs(limit: int = 1000, offset: int = 0) -> pd.DataFrame:
+def get_minting_logs(
+    limit: int = 1000, offset: int = 0, grade: str = "All"
+) -> pd.DataFrame:
     logs = requests.get(
-        API_URL + "/items", params={"limit": limit, "offset": offset}
+        API_URL + "/items", params={"limit": limit, "offset": offset, "grade": grade}
     ).json()
     df = pd.DataFrame(logs)
+    if df.empty:
+        return df
     df["created_at"] = pd.to_datetime(df["created_at"], format="ISO8601")
     df["skey"] = pd.to_datetime(df["skey"], format="ISO8601")
     return df
