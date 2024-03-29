@@ -112,6 +112,7 @@ with right:
         ],
         title="Rewards Time Series",
         color_discrete_sequence=colors,
+        hover_data={"#trial": df_onehot_cumsum["Total_minted"]},
     ).update_layout(
         xaxis_title="Date",
         yaxis_title="Cumulative Count",
@@ -126,6 +127,7 @@ with right:
         y="Legendary",
         title="Legendary Time Series",
         color_discrete_sequence=colors[-1:],
+        hover_data={"#trial": df_onehot_cumsum["Total_minted"]},
     ).update_layout(xaxis_title="Date", yaxis_title="Cumulative Count")
     st.plotly_chart(fig)
 
