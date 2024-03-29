@@ -29,6 +29,7 @@ def get_rewards_data_for_test(
 
     return df
 
+
 @st.cache_resource(ttl=60 * 60 * 24)
 def get_rewards_data(since: str | None = None) -> pd.DataFrame:
     print("Fetching get_rewards_data", since)
@@ -38,14 +39,16 @@ def get_rewards_data(since: str | None = None) -> pd.DataFrame:
 
 
 @st.cache_resource()
-def get_reward_counts(since: datetime | None = None) -> tuple[dict[str, int] | None, datetime]:
-    since_str = since.isoformat(timespec='milliseconds')[:22] + "@"
-    print(since.isoformat(timespec='milliseconds'), "Fetching get_reward_counts")
+def get_reward_counts(
+    since: datetime | None = None,
+) -> tuple[dict[str, int] | None, datetime]:
+    since_str = since.isoformat(timespec="milliseconds")[:22] + "@"
+    print(since.isoformat(timespec="milliseconds"), "Fetching get_reward_counts")
     d = datetime.now(timezone.utc)
     json_data = get_json_from_api(since_date=since_str)
     df = get_dataframe(json_data) if json_data else pd.DataFrame()
     if len(df) == 0:
-        print('>> next_since', d.isoformat(timespec='milliseconds'), "no data")
+        print(">> next_since", d.isoformat(timespec="milliseconds"), "no data")
         return None, d
     latest_update = df["skey"].max()
     rewards = ["Total Trials"] + list(GRADES)
@@ -59,7 +62,7 @@ def get_reward_counts(since: datetime | None = None) -> tuple[dict[str, int] | N
         reward_counts[name] = values[i]
     d = datetime.fromisoformat(latest_update[:23])
     d = d.replace(tzinfo=utc)
-    print('>> next_since', d.isoformat(timespec='milliseconds'), "num=", values[0])
+    print(">> next_since", d.isoformat(timespec="milliseconds"), "num=", values[0])
     return reward_counts, d
 
 
@@ -123,6 +126,8 @@ def get_json_from_api(
     api_url: str | None = None, since_date: str | None = None
 ) -> list[dict]:
     call_url = get_api_url(api_url, since_date)
-    response = requests.get(call_url)
+    response = requests.get(
+        call_url, headers={"DASHBOARD_API_KEY": "AScjk23871nm!kfy%8WERyi"}
+    )
     response.raise_for_status()
     return response.json()
