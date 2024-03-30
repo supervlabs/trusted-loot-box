@@ -192,11 +192,20 @@ with left:
         df_minting_logs.set_index("total_minted", inplace=True)
         df_minting_logs.index.name = "# Trials"
 
+        def pad_zero(address):
+            # Add a leading zero to make it 66 characters
+            # Aptos Explorer requires 66 characters address
+            if len(address) == 65:
+                address = address[:2] + "0" + address[2:]
+            return address
+
         def make_reward_link(token_data_id):
+            token_data_id = pad_zero(token_data_id)
             url = f"https://explorer.aptoslabs.com/token/{token_data_id}/0?network=mainnet"
             return url
 
         def make_dice_link(txn_hash):
+            txn_hash = pad_zero(txn_hash)
             url = f"https://explorer.aptoslabs.com/txn/{txn_hash}/userTxnOverview?network=mainnet"
             return url
 
