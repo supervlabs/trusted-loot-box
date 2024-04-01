@@ -4,6 +4,7 @@ pytest-watch==4.2.0
 pytest==8.1.1
 python-dotenv==1.0.1
 requests==2.31.0
+scipy==1.12.0
 streamlit-autorefresh==1.0.1
 streamlit==1.32.1
 watchdog==4.0.0
