@@ -203,8 +203,8 @@ with right:
         y=PROBABILITIES[-1] * 100,
         line_dash="dot",
         line_color="red",
-        annotation_text="Designed Prob(%) baseline: 0.1%",
-        annotation_position="bottom right",
+        annotation_text="    Designed Prob(%) baseline: 0.1%",
+        annotation_position="top left",
     )
     st.plotly_chart(fig)
 
