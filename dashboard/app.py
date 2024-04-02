@@ -126,7 +126,7 @@ with right:
         yaxis_title="Cumulative Count",
         legend_title="Rewards",
     )
-    st.plotly_chart(fig)
+    st.plotly_chart(fig, use_container_width=True)
 
 with right:
     # Show Time Series for the Rarest Reward
@@ -138,7 +138,7 @@ with right:
         color_discrete_sequence=[colors_dict[grade_to_show_in_timeseries]],
         hover_data={"#trial": df_onehot_cumsum["Total_minted"]},
     ).update_layout(xaxis_title="Date (UTC)", yaxis_title="Cumulative Count")
-    st.plotly_chart(fig)
+    st.plotly_chart(fig, use_container_width=True)
 
 
 def show_prob_with_CI(
@@ -219,7 +219,7 @@ def show_prob_with_CI(
         annotation_text=f"    Designed Prob(%) baseline: {prob * 100}%",
         annotation_position="top left",
     )
-    st.plotly_chart(fig)
+    st.plotly_chart(fig, use_container_width=True)
 
 
 with right:
@@ -250,7 +250,7 @@ with left:
         labels={"x": "# Trials", "y": "Rewards"},
         color_continuous_scale=["white", "blue"],
     ).update_layout(coloraxis_showscale=False)
-    st.plotly_chart(fig)
+    st.plotly_chart(fig, use_container_width=True)
 
 
 # Show the trial table
