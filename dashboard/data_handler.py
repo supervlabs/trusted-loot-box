@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 
 GRADES = ("Common", "Uncommon", "Rare", "Epic", "Legendary")
 PROBABILITIES = (1 - (0.3 + 0.05 + 0.008 + 0.001), 0.3, 0.05, 0.008, 0.001)
+PROB_DICT = dict(zip(GRADES, PROBABILITIES))
 assert len(GRADES) == len(PROBABILITIES)
 assert sum(PROBABILITIES) == 1
 
