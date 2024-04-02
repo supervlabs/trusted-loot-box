@@ -121,6 +121,7 @@ def show_prob_with_CI(
             ticksuffix="%",
         ),
         showlegend=False,
+        height=600,
     )
     fig.add_hline(
         y=prob * 100,
@@ -129,7 +130,7 @@ def show_prob_with_CI(
         annotation_text=f"    Designed Prob(%) baseline: {prob * 100}%",
         annotation_position="top left",
     )
-    st.plotly_chart(fig, use_container_width=True, height=600)
+    st.plotly_chart(fig, use_container_width=True)
 
 
 st.markdown("##### Probability Time Series")
