@@ -4,6 +4,7 @@ import plotly.graph_objs as go  # type: ignore
 import streamlit as st
 from data_handler import (
     GRADES,
+    PROB_DICT,
     PROBABILITIES,
     TTL,
     get_count,
@@ -31,6 +32,7 @@ st.set_page_config(
 )
 
 colors = ["#ffffff", "#a1ce5a", "#53b4dd", "#bc64ea", "#fedb50"]
+colors_dict = dict(zip(GRADES, colors))
 
 
 def show_rewards_probabilities(col):
@@ -128,35 +130,41 @@ with right:
 
 with right:
     # Show Time Series for the Rarest Reward
+    grade_to_show_in_timeseries = "Legendary"
     fig = px.line(
-        df_onehot_cumsum.set_index("Skey")["Legendary"],
+        df_onehot_cumsum.set_index("Skey")[grade_to_show_in_timeseries],
         y="Legendary",
         title="Legendary Time Series",
-        color_discrete_sequence=colors[-1:],
+        color_discrete_sequence=[colors_dict[grade_to_show_in_timeseries]],
         hover_data={"#trial": df_onehot_cumsum["Total_minted"]},
     ).update_layout(xaxis_title="Date (UTC)", yaxis_title="Cumulative Count")
     st.plotly_chart(fig)
 
-with right:
-    # Show Time Series for the probability of legendary and confidence interval
-    st.markdown("##### Legendary Probability Time Series")
-    alpha = 0.01
-    df_onehot_cumsum["Legendary_prob"] = (
-        df_onehot_cumsum["Legendary"] / df_onehot_cumsum["Total_minted"] * 100
+
+def show_prob_with_CI(
+    alpha: float, df_onehot_cumsum: pd.DataFrame, grade: str, y_range_value: float
+):
+    assert grade in GRADES
+    prob_name = grade + "_prob"
+    prob = PROB_DICT[grade]
+
+    df_onehot_cumsum[prob_name] = (
+        df_onehot_cumsum[grade] / df_onehot_cumsum["Total_minted"] * 100
     )
+
     df_onehot_cumsum["Lower_bound"] = (
         beta.ppf(
             alpha / 2,
-            df_onehot_cumsum["Legendary"],
-            df_onehot_cumsum["Total_minted"] - df_onehot_cumsum["Legendary"] + 1,
+            df_onehot_cumsum[grade],
+            df_onehot_cumsum["Total_minted"] - df_onehot_cumsum[grade] + 1,
         )
         * 100
     )
     df_onehot_cumsum["Upper_bound"] = (
         beta.ppf(
             1 - alpha / 2,
-            df_onehot_cumsum["Legendary"] + 1,
-            df_onehot_cumsum["Total_minted"] - df_onehot_cumsum["Legendary"],
+            df_onehot_cumsum[grade] + 1,
+            df_onehot_cumsum["Total_minted"] - df_onehot_cumsum[grade],
         )
         * 100
     )
@@ -166,9 +174,9 @@ with right:
             go.Scatter(
                 name="Probability",
                 x=df_onehot_cumsum["Skey"],
-                y=df_onehot_cumsum["Legendary_prob"],
+                y=df_onehot_cumsum[prob_name],
                 mode="lines",
-                line=dict(color=colors[-1]),
+                line=dict(color=colors_dict[grade]),
             ),
             go.Scatter(
                 name="Upper Bound",
@@ -193,22 +201,32 @@ with right:
         ]
     )
     fig.update_layout(
-        yaxis_title="Legendary Probability (%)",
+        yaxis_title=grade + " Probability (%)",
         xaxis_title="Date (UTC)",
-        title="Legendary Probability with 99% Confidence Interval",
+        title=grade + " Probability with 99% Confidence Interval",
         hovermode="x",
-        yaxis=dict(range=[0, 0.2], tickformat=".2f", ticksuffix="%"),
+        yaxis=dict(
+            range=[prob * 100 - y_range_value, prob * 100 + y_range_value],
+            tickformat=".2f",
+            ticksuffix="%",
+        ),
         showlegend=False,
     )
     fig.add_hline(
-        y=PROBABILITIES[-1] * 100,
+        y=prob * 100,
         line_dash="dot",
         line_color="red",
-        annotation_text="    Designed Prob(%) baseline: 0.1%",
+        annotation_text=f"    Designed Prob(%) baseline: {prob * 100}%",
         annotation_position="top left",
     )
     st.plotly_chart(fig)
 
+
+with right:
+    # Show Time Series for the probability of legendary and confidence interval
+    st.markdown("##### Legendary Probability Time Series")
+    alpha = 0.01
+    show_prob_with_CI(alpha, df_onehot_cumsum, "Legendary", 0.1)
 
 with left:
     # Show Heatmap for Rewards vs. Trials
