@@ -164,7 +164,7 @@ with right:
     fig = go.Figure(
         [
             go.Scatter(
-                name="Prob with CI",
+                name="Probability",
                 x=df_onehot_cumsum["Skey"],
                 y=df_onehot_cumsum["Legendary_prob"],
                 mode="lines",
@@ -198,6 +198,7 @@ with right:
         title="Legendary Probability with 99% Confidence Interval",
         hovermode="x",
         yaxis=dict(range=[0, 0.2], tickformat=".2f", ticksuffix="%"),
+        showlegend=False,
     )
     fig.add_hline(
         y=PROBABILITIES[-1] * 100,
