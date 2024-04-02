@@ -226,6 +226,29 @@ with right:
     # Show Time Series for the probability of legendary and confidence interval
     st.markdown("##### Legendary Probability Time Series")
     alpha = 0.01
+    with st.expander("Understanding the Graph"):
+        st.markdown(
+            """
+                    ### Understanding the Graph of Item Drop Rate
+                    Our graph presents two key pieces of information regarding the rate at which grade drop in our draws:
+                    1. Empirical Item Drop Rate: This represents the average chance that an item will drop. For example, if the empirical drop rate is 20%, it means that on average, you can expect the item to drop 20 times out of 100 tries.
+                    2. 99% Confidence Interval (CI): Surrounding the empirical drop rate, you'll notice a range marked by two lines or a shaded area. This is the 99% confidence interval, and it tells us about the certainty of our average drop rate estimate. While our average rate is the best guess based on the data we have, the true average drop rate (which we would see if we could collect all possible data) could be slightly different. The 99% CI gives us a range where we are 99% sure the true drop rate lies.
+
+                    ### Why 99% Confidence?
+                    Choosing a 99% confidence level means we're being very cautious. We acknowledge there's a small chance (1%) our range might not include the true drop rate, but we're 99% confident it does. This wide net helps ensure our estimate is robust, even though it makes the range larger than if we were less strict (like with a 95% confidence interval).
+
+                    ### How to calculate the 99% Confidence Interval:
+                    We use the [Clopper–Pearson interval](https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval#Clopper%E2%80%93Pearson_interval) to calculate the confidence interval for the probability of getting a Sidekick. This method is based on the binomial distribution and provides a range where the true probability is likely to fall with a certain level of confidence.
+
+                    ### How to Read the Graph:
+                    * The solid line for the empirical drop rate shows our best estimate of the drop rate based on the data collected.
+                    * The area representing the 99% CI tell us about the range of values where the true drop rate is likely to fall. The true drop rate, which is dotted red line, is probably not exactly at our estimated average but somewhere within this range.
+
+                    ### Why Is This Important?
+                    Understanding both the empirical drop rate and the confidence interval helps us grasp not just what the data shows but also how certain we can be about these findings. It guides us in making decisions based on this data, aware of the potential variability and ensuring that we account for uncertainty in our planning and expectations.
+
+                    If you have any questions about this graph or the data it presents, please feel free to reach out. We're here to help make this information as clear and useful to you as possible!"""
+        )
     show_prob_with_CI(alpha, df_onehot_cumsum, "Legendary", 0.1)
 
 with left:
